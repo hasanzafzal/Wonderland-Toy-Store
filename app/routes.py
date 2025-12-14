@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template
+from app.models import Product, Order
+from app import db
 
 main_bp = Blueprint('main', __name__)
 
@@ -15,4 +17,5 @@ def about():
 @main_bp.route('/products')
 def products():
     """Products page"""
-    return render_template('products.html', title='Our Products')
+    all_products = Product.query.all()
+    return render_template('products.html', title='Our Products', products=all_products)
