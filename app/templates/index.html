@@ -1,9 +1,167 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="hero">
-    <h2>Welcome to Wonderland Toy Store</h2>
-    <p>Your magical destination for premium toys and gifts</p>
-    <a href="{{ url_for('main.products') }}" class="btn">Shop Now</a>
+<!-- Hero Section -->
+<section class="hero" id="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Welcome to Wonderland Toy Store</h1>
+        <p class="hero-subtitle">Discover the Magic of Play - Premium Toys & Gifts for Every Age</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('main.products') }}" class="btn btn-primary">Shop Now</a>
+            <a href="#featured" class="btn btn-secondary">Explore Featured</a>
+        </div>
+    </div>
+    <div class="hero-background">
+        <div class="floating-toy toy-1">🎮</div>
+        <div class="floating-toy toy-2">🧩</div>
+        <div class="floating-toy toy-3">🎪</div>
+        <div class="floating-toy toy-4">🎨</div>
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+<section class="featured-section" id="featured">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured Products</h2>
+            <p>Our Most Popular Toys This Season</p>
+        </div>
+        <div class="featured-grid" id="featured-products">
+            <!-- Dynamically populated by JavaScript -->
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Shop by Category</h2>
+            <p>Find Your Perfect Toy</p>
+        </div>
+        <div class="categories-grid" id="categories">
+            <div class="category-card" data-category="action">
+                <div class="category-icon">🦸</div>
+                <h3>Action Figures</h3>
+                <p>Superheroes & Collectibles</p>
+            </div>
+            <div class="category-card" data-category="building">
+                <div class="category-icon">🧱</div>
+                <h3>Building Sets</h3>
+                <p>Construction & Creativity</p>
+            </div>
+            <div class="category-card" data-category="puzzle">
+                <div class="category-icon">🧩</div>
+                <h3>Puzzles</h3>
+                <p>Brain Teasers & Games</p>
+            </div>
+            <div class="category-card" data-category="outdoor">
+                <div class="category-icon">🚴</div>
+                <h3>Outdoor Toys</h3>
+                <p>Sports & Adventure</p>
+            </div>
+            <div class="category-card" data-category="art">
+                <div class="category-icon">🎨</div>
+                <h3>Arts & Crafts</h3>
+                <p>Creative Expression</p>
+            </div>
+            <div class="category-card" data-category="plush">
+                <div class="category-icon">🧸</div>
+                <h3>Plush Toys</h3>
+                <p>Cuddly Companions</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>What Our Customers Say</h2>
+            <p>Real Reviews from Happy Families</p>
+        </div>
+        <div class="testimonials-carousel" id="testimonials">
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"Amazing selection of toys! My kids were thrilled with their purchases. Fast delivery and excellent customer service."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👩</div>
+                    <div class="author-info">
+                        <p class="author-name">Sarah Johnson</p>
+                        <p class="author-location">New York, USA</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"Best toy store I've found online. Quality products and fair prices. Will definitely shop here again!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👨</div>
+                    <div class="author-info">
+                        <p class="author-name">Michael Chen</p>
+                        <p class="author-location">Los Angeles, USA</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"My daughter loved every toy she received. Great packaging and everything arrived in perfect condition."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">👩‍🦱</div>
+                    <div class="author-info">
+                        <p class="author-name">Emma Williams</p>
+                        <p class="author-location">London, UK</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="why-choose-us">
+    <div class="container">
+        <div class="section-header">
+            <h2>Why Choose Wonderland?</h2>
+            <p>What Makes Us Special</p>
+        </div>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">✓</div>
+                <h3>Premium Quality</h3>
+                <p>All toys tested for safety and durability</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🚚</div>
+                <h3>Fast Shipping</h3>
+                <p>Free shipping on orders over $50</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">💯</div>
+                <h3>100% Satisfaction</h3>
+                <p>30-day money-back guarantee</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🎁</div>
+                <h3>Gift Wrapping</h3>
+                <p>Complimentary gift wrapping available</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+    <div class="container">
+        <div class="newsletter-content">
+            <h2>Stay Updated</h2>
+            <p>Subscribe to get exclusive deals and new toy arrivals</p>
+            <form class="newsletter-form" id="newsletter-form">
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+        </div>
+    </div>
 </section>
 {% endblock %}

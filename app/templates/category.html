@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <p>Explore our {{ category }} collection</p>
+    </div>
+</section>
+
+<!-- Category Products -->
+<section class="category-products-section">
+    <div class="container">
+        <div class="products-info">
+            <p class="product-count">Showing {{ products|length }} products</p>
+        </div>
+        
+        <div class="category-grid">
+            {% for product in products %}
+            <div class="product-card" data-product-id="{{ product.id }}">
+                <div class="product-image">
+                    <span>{{ product.icon }}</span>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description }}</p>
+                    <div class="product-footer">
+                        <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
+                        <div class="product-rating">⭐ 4.8</div>
+                    </div>
+                    <button class="btn-add-cart">Add to Cart</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Related Categories -->
+<section class="related-categories">
+    <div class="container">
+        <div class="section-header">
+            <h2>Browse Other Categories</h2>
+        </div>
+        <div class="categories-quick-nav">
+            <a href="{{ url_for('main.category', category='action') }}" class="category-nav-item">🦸 Action Figures</a>
+            <a href="{{ url_for('main.category', category='building') }}" class="category-nav-item">🧱 Building Sets</a>
+            <a href="{{ url_for('main.category', category='puzzle') }}" class="category-nav-item">🧩 Puzzles</a>
+            <a href="{{ url_for('main.category', category='outdoor') }}" class="category-nav-item">🚴 Outdoor Toys</a>
+            <a href="{{ url_for('main.category', category='art') }}" class="category-nav-item">🎨 Arts & Crafts</a>
+            <a href="{{ url_for('main.category', category='plush') }}" class="category-nav-item">🧸 Plush Toys</a>
+        </div>
+    </div>
+</section>
+
+<script>
+document.querySelectorAll('.btn-add-cart').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const card = this.closest('.product-card');
+        const productName = card.querySelector('.product-name').textContent;
+        
+        const originalText = this.textContent;
+        this.textContent = '✓ Added!';
+        this.style.background = '#27ae60';
+        
+        setTimeout(() => {
+            this.textContent = originalText;
+            this.style.background = '';
+        }, 2000);
+        
+        showNotification(`${productName} added to cart!`);
+    });
+});
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.remove(), 3000);
+}
+</script>
+
+<style>
+.page-header {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-products-section {
+    padding: 3rem 0;
+    background-color: white;
+}
+
+.products-info {
+    margin-bottom: 2rem;
+}
+
+.product-count {
+    font-weight: 600;
+    color: #666;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.product-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+}
+
+.product-info {
+    padding: 1.5rem;
+}
+
+.product-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.product-description {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ff6b9d;
+}
+
+.btn-add-cart {
+    width: 100%;
+    background: #ff6b9d;
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-add-cart:hover {
+    background: #c44569;
+    transform: scale(1.02);
+}
+
+.related-categories {
+    padding: 4rem 0;
+    background: #f9f9f9;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-header h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+}
+
+.categories-quick-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.category-nav-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #2c3e50;
+    text-align: center;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.category-nav-item:hover {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}

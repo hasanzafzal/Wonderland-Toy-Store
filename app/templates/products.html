@@ -1,24 +1,296 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="products">
-    <h2>Our Products</h2>
-    <div class="product-grid">
-        <div class="product-card">
-            <h3>Toy 1</h3>
-            <p>Price: $29.99</p>
-            <button>Add to Cart</button>
-        </div>
-        <div class="product-card">
-            <h3>Toy 2</h3>
-            <p>Price: $39.99</p>
-            <button>Add to Cart</button>
-        </div>
-        <div class="product-card">
-            <h3>Toy 3</h3>
-            <p>Price: $49.99</p>
-            <button>Add to Cart</button>
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>Our Products</h1>
+        <p>Discover our amazing collection of toys</p>
+    </div>
+</section>
+
+<!-- Filter and Sort Section -->
+<section class="products-filter-section">
+    <div class="container">
+        <div class="filter-controls">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search toys..." class="search-input">
+                <button class="search-btn">🔍</button>
+            </div>
+            <div class="sort-controls">
+                <select id="sort-select" class="sort-select">
+                    <option value="default">Sort by: Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="name">Name: A to Z</option>
+                </select>
+            </div>
         </div>
     </div>
 </section>
+
+<!-- Products Grid -->
+<section class="products-section">
+    <div class="container">
+        <div class="products-count">
+            <span id="product-count">{{ products|length }} products found</span>
+        </div>
+        <div class="products-grid" id="products-grid">
+            {% for product in products %}
+            <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}">
+                <div class="product-image">
+                    <span>{{ product.icon }}</span>
+                    <div class="product-badge">{{ product.category }}</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description }}</p>
+                    <div class="product-footer">
+                        <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
+                        <div class="product-rating">⭐ 4.8</div>
+                    </div>
+                    <button class="btn-add-cart" data-product-id="{{ product.id }}">Add to Cart</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- No Results -->
+<section id="no-results" class="no-results" style="display: none;">
+    <div class="container">
+        <div class="no-results-content">
+            <p class="no-results-icon">🔍</p>
+            <h2>No products found</h2>
+            <p>Try adjusting your search or filter criteria</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Can't find what you're looking for?</h2>
+        <p>Check back soon for new arrivals!</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">Back to Home</a>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+    
+    searchInput.addEventListener('keyup', filterProducts);
+    sortSelect.addEventListener('change', filterProducts);
+    
+    // Add to cart buttons
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const card = this.closest('.product-card');
+            const productName = card.querySelector('.product-name').textContent;
+            
+            const originalText = this.textContent;
+            this.textContent = '✓ Added!';
+            this.style.background = '#27ae60';
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.style.background = '';
+            }, 2000);
+            
+            showNotification(`${productName} added to cart!`);
+        });
+    });
+});
+
+function filterProducts() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const sortBy = document.getElementById('sort-select').value;
+    const cards = Array.from(document.querySelectorAll('.product-card'));
+    
+    // Filter by search
+    const filtered = cards.filter(card => {
+        const name = card.dataset.productName.toLowerCase();
+        return name.includes(searchTerm);
+    });
+    
+    // Sort
+    if (sortBy === 'price-low') {
+        filtered.sort((a, b) => parseFloat(a.dataset.productPrice) - parseFloat(b.dataset.productPrice));
+    } else if (sortBy === 'price-high') {
+        filtered.sort((a, b) => parseFloat(b.dataset.productPrice) - parseFloat(a.dataset.productPrice));
+    } else if (sortBy === 'name') {
+        filtered.sort((a, b) => a.dataset.productName.localeCompare(b.dataset.productName));
+    }
+    
+    // Update display
+    const grid = document.getElementById('products-grid');
+    const noResults = document.getElementById('no-results');
+    const count = document.getElementById('product-count');
+    
+    if (filtered.length === 0) {
+        grid.style.display = 'none';
+        noResults.style.display = 'block';
+        count.textContent = '0 products found';
+    } else {
+        grid.innerHTML = '';
+        filtered.forEach(card => grid.appendChild(card));
+        noResults.style.display = 'none';
+        count.textContent = `${filtered.length} products found`;
+    }
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+
+<style>
+.page-header {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.products-filter-section {
+    padding: 2rem 0;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #ff6b9d;
+    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+}
+
+.search-btn {
+    padding: 0.8rem 1.2rem;
+    background: #ff6b9d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.sort-select {
+    padding: 0.8rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.products-section {
+    padding: 3rem 0;
+    background-color: white;
+}
+
+.products-count {
+    margin-bottom: 2rem;
+    font-weight: 600;
+    color: #666;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.product-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.product-image {
+    position: relative;
+}
+
+.no-results {
+    padding: 3rem 0;
+}
+
+.no-results-content {
+    text-align: center;
+}
+
+.no-results-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.cta-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    text-align: center;
+    padding: 3rem 0;
+    margin-top: 2rem;
+}
+
+.cta-section h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+</style>
 {% endblock %}
