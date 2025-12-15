@@ -34,8 +34,22 @@ def create_app():
     from app.routes import main_bp
     app.register_blueprint(main_bp)
     
-    # Create tables
+    # Create tables and seed data
     with app.app_context():
         db.create_all()
+        
+        # Seed database with initial data if empty
+        from app.models import Product
+        if Product.query.first() is None:
+            products = [
+                Product(name='Teddy Bear', price=19.99, description='Cute and cuddly teddy bear', stock=50),
+                Product(name='Building Blocks', price=29.99, description='Colorful building blocks set', stock=35),
+                Product(name='Action Figure', price=24.99, description='Superhero action figure', stock=40),
+                Product(name='Doll House', price=49.99, description='Beautiful dollhouse with furniture', stock=20),
+                Product(name='Board Game', price=34.99, description='Fun family board game', stock=30),
+            ]
+            for product in products:
+                db.session.add(product)
+            db.session.commit()
     
     return app
