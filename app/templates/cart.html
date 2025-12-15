@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>🛒 Shopping Cart</h1>
+    
+    {% if cart and cart.items %}
+        <div class="cart-wrapper">
+            <div class="cart-items">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart.items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>${{ "%.2f"|format(item.product.price) }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('main.update_cart_item', item_id=item.id) }}" class="quantity-form">
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="100">
+                                        <button type="submit" class="btn btn-sm btn-secondary">Update</button>
+                                    </form>
+                                </td>
+                                <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
+                                <td>
+                                    <a href="{{ url_for('main.remove_from_cart', item_id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Remove item?')">Remove</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="cart-summary">
+                <div class="summary-card">
+                    <h3>Order Summary</h3>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>${{ "%.2f"|format(cart.get_total()) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax:</span>
+                        <span>${{ "%.2f"|format(cart.get_total() * 0.1) }}</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span>${{ "%.2f"|format(cart.get_total() * 1.1) }}</span>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('main.checkout') }}">
+                        <button type="submit" class="btn btn-primary btn-block">Proceed to Checkout</button>
+                    </form>
+                    
+                    <a href="{{ url_for('main.products') }}" class="btn btn-secondary btn-block">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Your cart is empty</h2>
+            <p>Start shopping to add items to your cart!</p>
+            <a href="{{ url_for('main.products') }}" class="btn btn-primary">Browse Products</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .container h1 {
+        margin-bottom: 30px;
+        color: #333;
+    }
+    
+    .cart-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .cart-items {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .cart-table th {
+        background-color: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .cart-table td {
+        padding: 15px 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .quantity-form {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .quantity-form input {
+        width: 60px;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    
+    .cart-summary {
+        position: sticky;
+        top: 20px;
+    }
+    
+    .summary-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .summary-card h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .summary-row.total {
+        border-bottom: none;
+        border-top: 2px solid #ddd;
+        margin-top: 10px;
+        padding-top: 15px;
+        font-weight: 600;
+        font-size: 16px;
+        color: #FF6B9D;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-cart-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
+    
+    .empty-cart h2 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .empty-cart p {
+        color: #666;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .cart-wrapper {
+            grid-template-columns: 1fr;
+        }
+        
+        .cart-summary {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}

@@ -39,17 +39,26 @@
             {% for product in products %}
             <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}">
                 <div class="product-image">
-                    <span>{{ product.icon }}</span>
-                    <div class="product-badge">{{ product.category }}</div>
+                    <span>🎁</span>
+                    <div class="product-badge">Toy</div>
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
-                    <p class="product-description">{{ product.description }}</p>
+                    <p class="product-description">{{ product.description or 'Premium toy product' }}</p>
                     <div class="product-footer">
                         <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
                         <div class="product-rating">⭐ 4.8</div>
                     </div>
-                    <button class="btn-add-cart" data-product-id="{{ product.id }}">Add to Cart</button>
+                    {% if current_user.is_authenticated %}
+                        <form method="POST" action="{{ url_for('main.add_to_cart', product_id=product.id) }}" class="add-to-cart-form">
+                            <div class="quantity-input">
+                                <input type="number" name="quantity" value="1" min="1" max="100">
+                            </div>
+                            <button type="submit" class="btn btn-add-cart">🛒 Add to Cart</button>
+                        </form>
+                    {% else %}
+                        <a href="{{ url_for('main.login', next=url_for('main.products')) }}" class="btn btn-add-cart">🔐 Login to Buy</a>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -85,26 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     searchInput.addEventListener('keyup', filterProducts);
     sortSelect.addEventListener('change', filterProducts);
-    
-    // Add to cart buttons
-    document.querySelectorAll('.btn-add-cart').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            const card = this.closest('.product-card');
-            const productName = card.querySelector('.product-name').textContent;
-            
-            const originalText = this.textContent;
-            this.textContent = '✓ Added!';
-            this.style.background = '#27ae60';
-            
-            setTimeout(() => {
-                this.textContent = originalText;
-                this.style.background = '';
-            }, 2000);
-            
-            showNotification(`${productName} added to cart!`);
-        });
-    });
 });
 
 function filterProducts() {
@@ -142,29 +131,6 @@ function filterProducts() {
         noResults.style.display = 'none';
         count.textContent = `${filtered.length} products found`;
     }
-}
-
-function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        z-index: 10000;
-        animation: slideInRight 0.3s ease;
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.animation = 'slideInRight 0.3s ease reverse';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
 }
 </script>
 
@@ -286,6 +252,38 @@ function showNotification(message) {
     text-align: center;
     padding: 3rem 0;
     margin-top: 2rem;
+}
+
+.add-to-cart-form {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.quantity-input input {
+    width: 60px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.btn-add-cart {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-add-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
+}
 }
 
 .cta-section h2 {

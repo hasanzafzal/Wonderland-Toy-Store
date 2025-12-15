@@ -15,9 +15,33 @@
                 <li><a href="{{ url_for('main.products') }}">Products</a></li>
                 <li><a href="{{ url_for('main.about') }}">About</a></li>
                 <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('main.view_cart') }}">🛒 Cart</a></li>
+                    <li><a href="{{ url_for('main.orders') }}">My Orders</a></li>
+                    <li class="user-menu">
+                        <span>👤 {{ current_user.username }}</span>
+                        <a href="{{ url_for('main.logout') }}" class="logout-link">Logout</a>
+                    </li>
+                {% else %}
+                    <li><a href="{{ url_for('main.login') }}" class="btn-login">Login</a></li>
+                    <li><a href="{{ url_for('main.register') }}" class="btn-register">Register</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="messages-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                        <button class="close-alert" onclick="this.parentElement.style.display='none';">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
     <main>
         {% block content %}{% endblock %}
@@ -40,9 +64,9 @@
             <div class="footer-section">
                 <h4>Categories</h4>
                 <ul>
-                    <li><a href="{{ url_for('main.category', category='action') }}">Action Figures</a></li>
-                    <li><a href="{{ url_for('main.category', category='building') }}">Building Sets</a></li>
-                    <li><a href="{{ url_for('main.category', category='puzzle') }}">Puzzles</a></li>
+                    <li><a href="{{ url_for('main.products') }}">Products</a></li>
+                    <li><a href="{{ url_for('main.about') }}">About</a></li>
+                    <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -57,5 +81,135 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <style>
+        .messages-container {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 10px 20px;
+        }
+        
+        .alert {
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .close-alert {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        
+        .close-alert:hover {
+            opacity: 1;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-menu a:hover {
+            opacity: 0.8;
+        }
+        
+        .btn-login, .btn-register {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        .btn-login {
+            background: transparent;
+            border: 2px solid white;
+        }
+        
+        .btn-register {
+            background: #FF6B9D;
+            border: 2px solid #FF6B9D;
+        }
+        
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .logout-link {
+            padding: 0.5rem 1rem;
+            background: #FF6B9D;
+            border-radius: 5px;
+        }
+    </style>
 </body>
 </html>
