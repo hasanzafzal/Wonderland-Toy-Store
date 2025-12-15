@@ -15,10 +15,12 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     reset_token = db.Column(db.String(100), unique=True, nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)
+    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     cart = db.relationship('Cart', backref='user', lazy=True, uselist=False)
     orders = db.relationship('Order', backref='user', lazy=True)
+    wishlist_items = db.relationship('Wishlist', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Hash and set password"""
@@ -51,17 +53,24 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
 class Product(db.Model):
-    """Product model"""
+    """Product model with inventory"""
     __tablename__ = 'products'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
+    stock = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     orders = db.relationship('Order', backref='product', lazy=True)
     cart_items = db.relationship('CartItem', backref='product', lazy=True)
+    wishlist_items = db.relationship('Wishlist', backref='product', lazy=True, cascade='all, delete-orphan')
+    
+    def is_in_stock(self):
+        """Check if product is in stock"""
+        return self.stock > 0
     
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -97,16 +106,41 @@ class CartItem(db.Model):
     def __repr__(self):
         return f'<CartItem {self.product_id} x{self.quantity}>'
 
+class Wishlist(db.Model):
+    """Wishlist model"""
+    __tablename__ = 'wishlist'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'product_id', name='unique_wishlist'),)
+    
+    def __repr__(self):
+        return f'<Wishlist {self.user_id}-{self.product_id}>'
+
 class Order(db.Model):
-    """Order model"""
+    """Order model with status tracking"""
     __tablename__ = 'orders'
+    
+    # Order status constants
+    STATUS_PENDING = 'pending'
+    STATUS_PROCESSING = 'processing'
+    STATUS_SHIPPED = 'shipped'
+    STATUS_DELIVERED = 'delivered'
+    STATUS_CANCELLED = 'cancelled'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default=STATUS_PENDING)
+    shipping_address = db.Column(db.Text)
+    tracking_number = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
-        return f'<Order {self.id} - User {self.user_id}>'
+        return f'<Order {self.id} - {self.status}>'

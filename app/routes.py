@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import Product, Order, User, Cart, CartItem
+from app.models import Product, Order, User, Cart, CartItem, Wishlist
 from app import db
 from werkzeug.security import generate_password_hash
+from functools import wraps
 
 main_bp = Blueprint('main', __name__)
 
@@ -278,3 +279,205 @@ def orders():
     orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
     return render_template('orders.html', title='My Orders', orders=orders)
 
+# Admin decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('You do not have permission to access this page.', 'error')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Wishlist routes
+@main_bp.route('/wishlist')
+@login_required
+def view_wishlist():
+    """View user's wishlist"""
+    wishlist_items = Wishlist.query.filter_by(user_id=current_user.id).all()
+    return render_template('wishlist.html', title='My Wishlist', wishlist_items=wishlist_items)
+
+@main_bp.route('/wishlist/add/<int:product_id>', methods=['POST'])
+@login_required
+def add_to_wishlist(product_id):
+    """Add product to wishlist"""
+    product = Product.query.get_or_404(product_id)
+    
+    # Check if already in wishlist
+    existing = Wishlist.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    if existing:
+        flash('Product already in wishlist!', 'warning')
+        return redirect(url_for('main.products'))
+    
+    wishlist_item = Wishlist(user_id=current_user.id, product_id=product_id)
+    db.session.add(wishlist_item)
+    db.session.commit()
+    
+    flash(f'{product.name} added to wishlist!', 'success')
+    return redirect(url_for('main.products'))
+
+@main_bp.route('/wishlist/remove/<int:item_id>')
+@login_required
+def remove_from_wishlist(item_id):
+    """Remove product from wishlist"""
+    item = Wishlist.query.get_or_404(item_id)
+    
+    if item.user_id != current_user.id:
+        flash('Unauthorized', 'error')
+        return redirect(url_for('main.view_wishlist'))
+    
+    product_name = item.product.name
+    db.session.delete(item)
+    db.session.commit()
+    
+    flash(f'{product_name} removed from wishlist', 'success')
+    return redirect(url_for('main.view_wishlist'))
+
+# User dashboard
+@main_bp.route('/dashboard')
+@login_required
+def dashboard():
+    """User dashboard"""
+    user_orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).limit(5).all()
+    wishlist_count = Wishlist.query.filter_by(user_id=current_user.id).count()
+    total_spent = db.session.query(db.func.sum(Order.total_price)).filter_by(user_id=current_user.id).scalar() or 0
+    orders_count = Order.query.filter_by(user_id=current_user.id).count()
+    
+    return render_template('dashboard.html', 
+                         title='My Dashboard',
+                         user_orders=user_orders,
+                         wishlist_count=wishlist_count,
+                         total_spent=total_spent,
+                         orders_count=orders_count)
+
+# Admin dashboard routes
+@main_bp.route('/admin')
+@admin_required
+def admin_dashboard():
+    """Admin dashboard"""
+    total_users = User.query.count()
+    total_products = Product.query.count()
+    total_orders = Order.query.count()
+    total_revenue = db.session.query(db.func.sum(Order.total_price)).scalar() or 0
+    recent_orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
+    
+    return render_template('admin/dashboard.html',
+                         title='Admin Dashboard',
+                         total_users=total_users,
+                         total_products=total_products,
+                         total_orders=total_orders,
+                         total_revenue=total_revenue,
+                         recent_orders=recent_orders)
+
+@main_bp.route('/admin/products')
+@admin_required
+def admin_products():
+    """Admin products management"""
+    products = Product.query.all()
+    return render_template('admin/products.html', title='Manage Products', products=products)
+
+@main_bp.route('/admin/products/add', methods=['GET', 'POST'])
+@admin_required
+def admin_add_product():
+    """Add new product"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        price = request.form.get('price')
+        description = request.form.get('description')
+        stock = request.form.get('stock')
+        
+        if not all([name, price, stock]):
+            flash('Name, price, and stock are required', 'error')
+            return redirect(url_for('main.admin_add_product'))
+        
+        product = Product(name=name, price=float(price), description=description, stock=int(stock))
+        db.session.add(product)
+        db.session.commit()
+        
+        flash('Product added successfully!', 'success')
+        return redirect(url_for('main.admin_products'))
+    
+    return render_template('admin/add_product.html', title='Add Product')
+
+@main_bp.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_product(product_id):
+    """Edit product"""
+    product = Product.query.get_or_404(product_id)
+    
+    if request.method == 'POST':
+        product.name = request.form.get('name')
+        product.price = float(request.form.get('price'))
+        product.description = request.form.get('description')
+        product.stock = int(request.form.get('stock'))
+        db.session.commit()
+        
+        flash('Product updated successfully!', 'success')
+        return redirect(url_for('main.admin_products'))
+    
+    return render_template('admin/edit_product.html', title='Edit Product', product=product)
+
+@main_bp.route('/admin/products/delete/<int:product_id>')
+@admin_required
+def admin_delete_product(product_id):
+    """Delete product"""
+    product = Product.query.get_or_404(product_id)
+    product_name = product.name
+    db.session.delete(product)
+    db.session.commit()
+    
+    flash(f'Product "{product_name}" deleted successfully!', 'success')
+    return redirect(url_for('main.admin_products'))
+
+@main_bp.route('/admin/orders')
+@admin_required
+def admin_orders():
+    """Admin orders management"""
+    orders = Order.query.order_by(Order.created_at.desc()).all()
+    return render_template('admin/orders.html', title='Manage Orders', orders=orders)
+
+@main_bp.route('/admin/orders/<int:order_id>/status/<new_status>')
+@admin_required
+def admin_update_order_status(order_id, new_status):
+    """Update order status"""
+    order = Order.query.get_or_404(order_id)
+    valid_statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+    
+    if new_status not in valid_statuses:
+        flash('Invalid status', 'error')
+        return redirect(url_for('main.admin_orders'))
+    
+    order.status = new_status
+    db.session.commit()
+    
+    flash(f'Order status updated to {new_status}', 'success')
+    return redirect(url_for('main.admin_orders'))
+
+@main_bp.route('/admin/users')
+@admin_required
+def admin_users():
+    """Admin users management"""
+    users = User.query.all()
+    return render_template('admin/users.html', title='Manage Users', users=users)
+
+@main_bp.route('/admin/users/<int:user_id>/make-admin')
+@admin_required
+def admin_make_admin(user_id):
+    """Make user admin"""
+    user = User.query.get_or_404(user_id)
+    user.is_admin = True
+    db.session.commit()
+    
+    flash(f'{user.username} is now an admin', 'success')
+    return redirect(url_for('main.admin_users'))
+
+@main_bp.route('/admin/users/<int:user_id>/remove-admin')
+@admin_required
+def admin_remove_admin(user_id):
+    """Remove admin privileges"""
+    user = User.query.get_or_404(user_id)
+    user.is_admin = False
+    db.session.commit()
+    
+    flash(f'{user.username} admin privileges removed', 'success')
+    return redirect(url_for('main.admin_users'))

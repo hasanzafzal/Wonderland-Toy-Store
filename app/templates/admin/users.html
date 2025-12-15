@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-users">
+    <div class="admin-header">
+        <h1>👥 Users Management</h1>
+    </div>
+    
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('main.admin_dashboard') }}" class="nav-btn">Dashboard</a>
+        <a href="{{ url_for('main.admin_products') }}" class="nav-btn">Products</a>
+        <a href="{{ url_for('main.admin_orders') }}" class="nav-btn">Orders</a>
+        <a href="{{ url_for('main.admin_users') }}" class="nav-btn active">Users</a>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="admin-section">
+        {% if users %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Orders</th>
+                            <th>Total Spent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>#{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="role-badge {% if user.is_admin %}role-admin{% else %}role-customer{% endif %}">
+                                        {{ "Admin" if user.is_admin else "Customer" }}
+                                    </span>
+                                </td>
+                                <td>{{ user.created_at.strftime('%m/%d/%Y') }}</td>
+                                <td>
+                                    <span class="count-badge">{{ user.orders|length }}</span>
+                                </td>
+                                <td>
+                                    ${{ "%.2f"|format(user.orders|map(attribute='total_price')|sum) }}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        {% if not user.is_admin and current_user.id != user.id %}
+                                            <a href="{{ url_for('main.admin_make_admin', user_id=user.id) }}" class="btn-icon btn-promote" title="Make Admin">👑</a>
+                                        {% elif user.is_admin and current_user.id != user.id %}
+                                            <a href="{{ url_for('main.admin_remove_admin', user_id=user.id) }}" class="btn-icon btn-demote" title="Remove Admin">🚫</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No users found</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- User Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="stat-value">{{ users|length }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Admin Users</h3>
+            <p class="stat-value">{{ users|selectattr('is_admin')|list|length }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Regular Users</h3>
+            <p class="stat-value">{{ users|rejectattr('is_admin')|list|length }}</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-users {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .admin-header {
+        margin-bottom: 30px;
+    }
+    
+    .admin-header h1 {
+        margin: 0;
+        color: #333;
+        font-size: 28px;
+    }
+    
+    .admin-nav {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #eee;
+    }
+    
+    .nav-btn {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        color: #666;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .nav-btn:hover {
+        color: #FF6B9D;
+    }
+    
+    .nav-btn.active {
+        color: #FF6B9D;
+        border-bottom-color: #FF6B9D;
+    }
+    
+    .admin-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .admin-table thead {
+        background: #f8f9fa;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .admin-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+    }
+    
+    .admin-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+    }
+    
+    .admin-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .role-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .role-admin {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .role-customer {
+        background: #cfe2ff;
+        color: #084298;
+    }
+    
+    .count-badge {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        background: #f0f0f0;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-icon {
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        text-align: center;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 13px;
+        text-decoration: none;
+    }
+    
+    .btn-promote {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .btn-promote:hover {
+        background: #0f5132;
+        color: white;
+    }
+    
+    .btn-demote {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .btn-demote:hover {
+        background: #721c24;
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .stat-value {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #FF6B9D;
+    }
+    
+    @media (max-width: 768px) {
+        .admin-table {
+            font-size: 12px;
+        }
+        
+        .admin-table th, .admin-table td {
+            padding: 8px;
+        }
+    }
+</style>
+{% endblock %}

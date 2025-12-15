@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-products">
+    <div class="admin-header">
+        <h1>📦 Products Management</h1>
+        <a href="{{ url_for('main.admin_add_product') }}" class="btn-add-new">+ Add New Product</a>
+    </div>
+    
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('main.admin_dashboard') }}" class="nav-btn">Dashboard</a>
+        <a href="{{ url_for('main.admin_products') }}" class="nav-btn active">Products</a>
+        <a href="{{ url_for('main.admin_orders') }}" class="nav-btn">Orders</a>
+        <a href="{{ url_for('main.admin_users') }}" class="nav-btn">Users</a>
+    </div>
+    
+    <!-- Products Table -->
+    <div class="admin-section">
+        {% if products %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr>
+                                <td>#{{ product.id }}</td>
+                                <td>{{ product.name }}</td>
+                                <td>${{ "%.2f"|format(product.price) }}</td>
+                                <td>
+                                    <span class="stock-badge {% if product.stock > 10 %}stock-high{% elif product.stock > 0 %}stock-medium{% else %}stock-low{% endif %}">
+                                        {{ product.stock }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if product.stock > 0 %}
+                                        <span class="status-badge status-active">Active</span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ product.created_at.strftime('%m/%d/%Y') }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('main.admin_edit_product', product_id=product.id) }}" class="btn-icon btn-edit" title="Edit">✏️</a>
+                                        <a href="{{ url_for('main.admin_delete_product', product_id=product.id) }}" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')">🗑️</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No products found. <a href="{{ url_for('main.admin_add_product') }}">Add one now!</a></p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .admin-products {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .admin-header h1 {
+        margin: 0;
+        color: #333;
+        font-size: 28px;
+    }
+    
+    .btn-add-new {
+        display: inline-block;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #FF6B9D 0%, #c44569 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-add-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
+    }
+    
+    .admin-nav {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #eee;
+    }
+    
+    .nav-btn {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        color: #666;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .nav-btn:hover {
+        color: #FF6B9D;
+    }
+    
+    .nav-btn.active {
+        color: #FF6B9D;
+        border-bottom-color: #FF6B9D;
+    }
+    
+    .admin-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .admin-table thead {
+        background: #f8f9fa;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .admin-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .admin-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .admin-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .stock-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .stock-high {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .stock-medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .stock-low {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-active {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-icon {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        text-decoration: none;
+    }
+    
+    .btn-edit {
+        background: #cfe2ff;
+        color: #084298;
+    }
+    
+    .btn-edit:hover {
+        background: #084298;
+        color: white;
+    }
+    
+    .btn-delete {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .btn-delete:hover {
+        background: #721c24;
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    
+    .empty-state a {
+        color: #FF6B9D;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+        .admin-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .admin-table {
+            font-size: 13px;
+        }
+        
+        .admin-table th, .admin-table td {
+            padding: 8px;
+        }
+    }
+</style>
+{% endblock %}

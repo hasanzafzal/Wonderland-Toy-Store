@@ -54,7 +54,12 @@
                             <div class="quantity-input">
                                 <input type="number" name="quantity" value="1" min="1" max="100">
                             </div>
-                            <button type="submit" class="btn btn-add-cart">🛒 Add to Cart</button>
+                            <div class="product-actions">
+                                <button type="submit" class="btn btn-add-cart">🛒 Add to Cart</button>
+                                <form method="POST" action="{{ url_for('main.add_to_wishlist', product_id=product.id) }}" class="wishlist-form" style="display:inline;">
+                                    <button type="submit" class="btn btn-wishlist" title="Add to Wishlist">❤️</button>
+                                </form>
+                            </div>
                         </form>
                     {% else %}
                         <a href="{{ url_for('main.login', next=url_for('main.products')) }}" class="btn btn-add-cart">🔐 Login to Buy</a>
@@ -256,12 +261,19 @@ function filterProducts() {
 
 .add-to-cart-form {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.product-actions {
+    display: flex;
     gap: 0.5rem;
     width: 100%;
 }
 
 .quantity-input input {
-    width: 60px;
+    width: 100%;
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -283,6 +295,24 @@ function filterProducts() {
 .btn-add-cart:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
+}
+
+.btn-wishlist {
+    flex: 0 0 45px;
+    padding: 0.8rem;
+    background: white;
+    color: #ff6b9d;
+    border: 2px solid #ff6b9d;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s;
+}
+
+.btn-wishlist:hover {
+    background: #ff6b9d;
+    color: white;
+    transform: scale(1.1);
 }
 }
 

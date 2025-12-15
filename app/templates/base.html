@@ -17,10 +17,17 @@
                 <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('main.view_cart') }}">🛒 Cart</a></li>
-                    <li><a href="{{ url_for('main.orders') }}">My Orders</a></li>
+                    <li><a href="{{ url_for('main.view_wishlist') }}">❤️ Wishlist</a></li>
+                    <li><a href="{{ url_for('main.orders') }}">📦 Orders</a></li>
+                    {% if current_user.is_admin %}
+                        <li><a href="{{ url_for('main.admin_dashboard') }}">🎛️ Admin</a></li>
+                    {% endif %}
                     <li class="user-menu">
                         <span>👤 {{ current_user.username }}</span>
-                        <a href="{{ url_for('main.logout') }}" class="logout-link">Logout</a>
+                        <div class="user-dropdown">
+                            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                            <a href="{{ url_for('main.logout') }}">Logout</a>
+                        </div>
                     </li>
                 {% else %}
                     <li><a href="{{ url_for('main.login') }}" class="btn-login">Login</a></li>
@@ -203,6 +210,44 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+            position: relative;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            min-width: 150px;
+            margin-top: 5px;
+        }
+        
+        .user-dropdown a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .user-dropdown a:first-child {
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .user-dropdown a:last-child {
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f0f0f0;
+        }
+        
+        .user-menu:hover .user-dropdown {
+            display: block;
         }
         
         .logout-link {
