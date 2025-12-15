@@ -81,6 +81,73 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('main.index'))
 
+@main_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Forgot password page"""
+    if current_user.is_authenticated:
+        return redirect(url_for('main.products'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Generate reset token
+            reset_token = user.generate_reset_token()
+            db.session.commit()
+            
+            # In a real app, you would send this via email
+            # For now, we'll show it in a flash message (for demo purposes)
+            reset_link = url_for('main.reset_password', token=reset_token, _external=True)
+            
+            flash(f'Password reset link: {reset_link}', 'info')
+            flash('If an account exists with this email, a password reset link will be sent.', 'success')
+        else:
+            # Don't reveal if email exists for security
+            flash('If an account exists with this email, a password reset link will be sent.', 'success')
+        
+        return redirect(url_for('main.login'))
+    
+    return render_template('forgot_password.html', title='Forgot Password')
+
+@main_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password with token"""
+    if current_user.is_authenticated:
+        return redirect(url_for('main.products'))
+    
+    user = User.query.filter_by(reset_token=token).first()
+    
+    if not user or not user.verify_reset_token(token):
+        flash('Invalid or expired password reset link.', 'error')
+        return redirect(url_for('main.login'))
+    
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not password or not confirm_password:
+            flash('All fields are required', 'error')
+            return redirect(url_for('main.reset_password', token=token))
+        
+        if password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return redirect(url_for('main.reset_password', token=token))
+        
+        if len(password) < 6:
+            flash('Password must be at least 6 characters', 'error')
+            return redirect(url_for('main.reset_password', token=token))
+        
+        # Set new password and clear token
+        user.set_password(password)
+        user.clear_reset_token()
+        db.session.commit()
+        
+        flash('Your password has been reset successfully. Please login with your new password.', 'success')
+        return redirect(url_for('main.login'))
+    
+    return render_template('reset_password.html', title='Reset Password', token=token)
+
 @main_bp.route('/products')
 def products():
     """Products page"""

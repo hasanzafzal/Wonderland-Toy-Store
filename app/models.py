@@ -1,8 +1,9 @@
 """Database models for Wonderland Toy Store"""
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+import secrets
 
 class User(UserMixin, db.Model):
     """User model for authentication"""
@@ -12,6 +13,8 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
+    reset_token = db.Column(db.String(100), unique=True, nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     cart = db.relationship('Cart', backref='user', lazy=True, uselist=False)
@@ -24,6 +27,25 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         """Check password against hash"""
         return check_password_hash(self.password_hash, password)
+    
+    def generate_reset_token(self):
+        """Generate a password reset token"""
+        self.reset_token = secrets.token_urlsafe(32)
+        self.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+        return self.reset_token
+    
+    def verify_reset_token(self, token):
+        """Verify password reset token"""
+        if self.reset_token != token:
+            return False
+        if self.reset_token_expires < datetime.utcnow():
+            return False
+        return True
+    
+    def clear_reset_token(self):
+        """Clear reset token after use"""
+        self.reset_token = None
+        self.reset_token_expires = None
     
     def __repr__(self):
         return f'<User {self.username}>'
