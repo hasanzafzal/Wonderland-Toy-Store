@@ -1,9 +1,300 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="about">
-    <h2>About Wonderland Toy Store</h2>
-    <p>We've been bringing joy to children and families since 2020.</p>
-    <p>Our mission is to provide high-quality, safe, and entertaining toys that spark imagination and creativity.</p>
+<section class="about-hero">
+    <div class="container">
+        <h1>About Wonderland Toy Store</h1>
+        <p class="about-subtitle">A project by Hasan and Hashir; H&H group of companies</p>
+    </div>
 </section>
+
+<section class="about-content">
+    <div class="container">
+        <div class="about-grid">
+            <!-- Mission Section -->
+            <div class="about-card">
+                <div class="about-icon">🎯</div>
+                <h3>Our Mission</h3>
+                <p>We're dedicated to providing high-quality, safe, and OpenSource projects to the community.</p>
+            </div>
+
+            <!-- Vision Section -->
+            <div class="about-card">
+                <div class="about-icon">✨</div>
+                <h3>Our Vision</h3>
+                <p>To be the best in what we do, contributing our part in making the world a better place.</p>
+            </div>
+
+            <!-- Values Section -->
+            <div class="about-card">
+                <div class="about-icon">💎</div>
+                <h3>Our Values</h3>
+                <p>Quality and transparency are at the heart of everything we do. We believe in OpenSource.</p>
+            </div>
+        </div>
+
+        <!-- Story Section -->
+        <div class="about-story">
+            <h2>Our Story</h2>
+            <p>Started by H&H Plays and Quest Trek in 2023, Hasan and Hashir are passionate about their projects and aim create a legacy with such projects.</p>
+            
+            <p>About this wonderland toy store; we carefully curate every toy in our collection, ensuring that each product meets our strict standards for quality, safety, and developmental value. Our team of toy experts works tirelessly to bring you the best selection of toys for every age group, from infants to adults.</p>
+
+            <p>Today in WTS, we serve thousands of happy customers who trust us to deliver not just toys, but happiness, imagination, and the building blocks of cherished memories.</p>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="about-stats">
+            <div class="stat-item">
+                <div class="stat-number">5000+</div>
+                <div class="stat-label">Happy Customers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">2000+</div>
+                <div class="stat-label">Unique Products</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Customer Support</div>
+            </div>
+        </div>
+
+        <!-- Team Projects Section -->
+        <div class="about-projects">
+            <h2>More Projects by H&H</h2>
+            <div class="projects-grid">
+                <a href="https://github.com/hasanzafzal/CF-Semester-Project" target="_blank" class="projects-item">
+                    <span class="projects-icon">🎮</span>
+                    <h4>H&H-Plays.com</h4>
+                    <p>A HTML based webpage aims to connect like minded PC Gaming
+                    enthusiasts of Pakistan</p>
+                </a>
+                <a href="https://github.com/hasanzafzal/CP-Semester-Project" target="_blank" class="projects-item">
+                    <span class="projects-icon">🗺️</span>
+                    <h4>Quest Trek</h4>
+                    <p>C++ Console based Capstone Project: Text-Based RPG - "Quests of Eldoria"</p>
+                </a>
+                <a href="https://github.com/WeWeBunnyX/HotelReservationSQL_Application" target="_blank" class="projects-item">
+                    <span class="projects-icon">🏨</span>
+                    <h4>H&H for the Stay</h4>
+                    <p>Our very own Hotel Reservation SQL Application for managing bookings and stays efficiently. Made using Qt and PostgreSQL.</p>
+                </a>
+                <a href="https://github.com/hasanzafzal/F1-Grub-Themes" target="_blank" class="projects-item">
+                    <span class="projects-icon">🏎️</span>
+                    <h4>F1 Grub Themes</h4>
+                    <p>FIA Formula One World Championship teams GRUB themes for bootloader, made by Hasan for himself, Hashir and the OpenSource community.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* ========== ABOUT PAGE ========== */
+    .about-hero {
+        background: linear-gradient(135deg, #004D7A 0%, #003D5C 100%);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+
+    .about-hero h1 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .about-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        font-weight: 300;
+    }
+
+    .about-content {
+        padding: 60px 20px;
+        background-color: #f9f9f9;
+    }
+
+    .about-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin-bottom: 60px;
+    }
+
+    .about-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .about-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .about-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+
+    .about-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        color: #004D7A;
+    }
+
+    .about-card p {
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .about-story {
+        background: white;
+        padding: 50px 40px;
+        border-radius: 12px;
+        margin-bottom: 60px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .about-story h2 {
+        font-size: 2rem;
+        color: #004D7A;
+        margin-bottom: 30px;
+    }
+
+    .about-story p {
+        color: #555;
+        line-height: 1.9;
+        margin-bottom: 20px;
+        font-size: 1.05rem;
+    }
+
+    .about-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 30px;
+        margin-bottom: 60px;
+        padding: 40px 30px;
+        background: linear-gradient(135deg, #FF8700 0%, #CC6B00 100%);
+        border-radius: 12px;
+    }
+
+    .stat-item {
+        text-align: center;
+        color: white;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.95;
+        font-weight: 500;
+    }
+
+    .about-projects {
+        background: white;
+        padding: 50px 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .about-projects h2 {
+        font-size: 2rem;
+        color: #004D7A;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 30px;
+    }
+
+    .projects-item {
+        text-align: center;
+        padding: 30px;
+        border: 2px solid #f0f0f0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .projects-item:hover {
+        border-color: #FF8700;
+        background-color: #fff9f0;
+    }
+
+    .projects-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .projects-item h4 {
+        font-size: 1.3rem;
+        color: #004D7A;
+        margin-bottom: 10px;
+    }
+
+    .projects-item p {
+        color: #666;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .about-hero h1 {
+            font-size: 2rem;
+        }
+
+        .about-subtitle {
+            font-size: 1rem;
+        }
+
+        .about-story {
+            padding: 30px 20px;
+        }
+
+        .about-story h2 {
+            font-size: 1.5rem;
+        }
+
+        .about-stats {
+            padding: 30px 20px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+        }
+
+        .about-projects {
+            padding: 30px 20px;
+        }
+
+        .projects-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}

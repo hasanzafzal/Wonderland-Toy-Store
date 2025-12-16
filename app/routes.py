@@ -68,7 +68,10 @@ def login():
             login_user(user)
             flash(f'Welcome back, {username}!', 'success')
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.products'))
+            if next_page:
+                return redirect(next_page)
+            # Redirect admins to admin dashboard, regular users to products
+            return redirect(url_for('main.admin_dashboard')) if user.is_admin else redirect(url_for('main.products'))
         else:
             flash('Invalid username or password', 'error')
     
