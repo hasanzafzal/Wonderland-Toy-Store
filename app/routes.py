@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import Product, Order, User, Cart, CartItem, Wishlist
+from app.models import Product, Order, User, Cart, CartItem, Wishlist, Category
 from app import db
 from werkzeug.security import generate_password_hash
 from functools import wraps
@@ -154,9 +154,30 @@ def reset_password(token):
 
 @main_bp.route('/products')
 def products():
-    """Products page"""
+    """Products page - shows categories"""
+    categories = Category.query.all()
+    return render_template('products.html', title='Our Products', categories=categories, view_mode='categories')
+
+@main_bp.route('/products/all')
+def all_products():
+    """View all products"""
     products = Product.query.all()
-    return render_template('products.html', title='Our Products', products=products)
+    categories = Category.query.all()
+    return render_template('products.html', title='All Products', products=products, categories=categories, view_mode='all')
+
+@main_bp.route('/products/category/<int:category_id>')
+def category_products(category_id):
+    """View all products in a specific category"""
+    category = Category.query.get_or_404(category_id)
+    products = Product.query.filter_by(category_id=category_id).all()
+    categories = Category.query.all()
+    return render_template('products.html', title=category.name, category=category, products=products, categories=categories, view_mode='category')
+
+@main_bp.route('/categories')
+def all_categories():
+    """View all product categories"""
+    categories = Category.query.all()
+    return render_template('category.html', title='All Categories', categories=categories)
 
 @main_bp.route('/about')
 def about():

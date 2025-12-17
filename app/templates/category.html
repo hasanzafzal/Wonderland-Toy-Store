@@ -5,22 +5,82 @@
 <section class="page-header">
     <div class="container">
         <h1>{{ title }}</h1>
-        <p>Explore our {{ category }} collection</p>
+        {% if category %}
+            <p>Explore our {{ category.name }} collection</p>
+        {% else %}
+            <p>Browse all our product categories</p>
+        {% endif %}
     </div>
 </section>
 
+<!-- All Categories View -->
+{% if categories %}
+<section class="all-categories-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>All Product Categories</h2>
+            <p>Choose a category to see our amazing collection</p>
+        </div>
+        
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('main.category_products', category_id=cat.id) }}" class="category-card">
+                <div class="category-icon">
+                    {% if cat.name == 'Lego' %}
+                        🧱
+                    {% elif cat.name == 'Masito (Toy Cars)' %}
+                        🚗
+                    {% elif cat.name == 'Plush toys' %}
+                        🧸
+                    {% elif cat.name == 'Board games' %}
+                        🎲
+                    {% elif cat.name == 'Arts and Crafts' %}
+                        🎨
+                    {% elif cat.name == 'Hotwheels' %}
+                        🏎️
+                    {% else %}
+                        🎀
+                    {% endif %}
+                </div>
+                <div class="category-content">
+                    <h3>{{ cat.name }}</h3>
+                    <p>{{ cat.description }}</p>
+                    <span class="product-count-badge">{{ cat.products|length }} products</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Category Products -->
+{% if category and products %}
 <section class="category-products-section">
     <div class="container">
         <div class="products-info">
-            <p class="product-count">Showing {{ products|length }} products</p>
+            <p class="product-count">Showing {{ products|length }} products in {{ category.name }}</p>
         </div>
         
         <div class="category-grid">
             {% for product in products %}
             <div class="product-card" data-product-id="{{ product.id }}">
                 <div class="product-image">
-                    <span>{{ product.icon }}</span>
+                    {% if category.name == 'Lego' %}
+                        🧱
+                    {% elif category.name == 'Masito (Toy Cars)' %}
+                        🚗
+                    {% elif category.name == 'Plush toys' %}
+                        🧸
+                    {% elif category.name == 'Board games' %}
+                        🎲
+                    {% elif category.name == 'Arts and Crafts' %}
+                        🎨
+                    {% elif category.name == 'Hotwheels' %}
+                        🏎️
+                    {% else %}
+                        🎀
+                    {% endif %}
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
@@ -29,34 +89,48 @@
                         <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
                         <div class="product-rating">⭐ 4.8</div>
                     </div>
-                    <button class="btn-add-cart">Add to Cart</button>
+                    <form method="POST" action="{{ url_for('main.add_to_cart', product_id=product.id) }}" class="add-to-cart-form">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn-add-cart">Add to Cart</button>
+                    </form>
                 </div>
             </div>
+            {% else %}
+            <p>No products found in this category</p>
             {% endfor %}
         </div>
+        
+        {% if category %}
+        <div class="back-link">
+            <a href="{{ url_for('main.all_categories') }}">← Back to All Categories</a>
+        </div>
+        {% endif %}
     </div>
 </section>
+{% endif %}
 
-<!-- Related Categories -->
+<!-- Related Categories Navigation -->
 <section class="related-categories">
     <div class="container">
         <div class="section-header">
             <h2>Browse Other Categories</h2>
         </div>
         <div class="categories-quick-nav">
-            <a href="{{ url_for('main.category', category='action') }}" class="category-nav-item">🦸 Action Figures</a>
-            <a href="{{ url_for('main.category', category='building') }}" class="category-nav-item">🧱 Building Sets</a>
-            <a href="{{ url_for('main.category', category='puzzle') }}" class="category-nav-item">🧩 Puzzles</a>
-            <a href="{{ url_for('main.category', category='outdoor') }}" class="category-nav-item">🚴 Outdoor Toys</a>
-            <a href="{{ url_for('main.category', category='art') }}" class="category-nav-item">🎨 Arts & Crafts</a>
-            <a href="{{ url_for('main.category', category='plush') }}" class="category-nav-item">🧸 Plush Toys</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">📚 All Categories</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🧱 Lego</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🚗 Masito Cars</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🧸 Plush Toys</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🎲 Board Games</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🎨 Arts & Crafts</a>
+            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🏎️ Hotwheels</a>
         </div>
     </div>
 </section>
 
 <script>
 document.querySelectorAll('.btn-add-cart').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
         const card = this.closest('.product-card');
         const productName = card.querySelector('.product-name').textContent;
         
@@ -70,6 +144,11 @@ document.querySelectorAll('.btn-add-cart').forEach(btn => {
         }, 2000);
         
         showNotification(`${productName} added to cart!`);
+        
+        // Submit the form after a short delay
+        setTimeout(() => {
+            this.form.submit();
+        }, 500);
     });
 });
 
@@ -106,6 +185,89 @@ function showNotification(message) {
     margin-bottom: 0.5rem;
 }
 
+.all-categories-section {
+    padding: 4rem 0;
+    background-color: #f5f5f5;
+}
+
+.all-categories-section .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.all-categories-section .section-header h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+}
+
+.all-categories-section .section-header p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.category-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.category-icon {
+    font-size: 3.5rem;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FF8700 0%, #CC6B00 100%);
+    flex-shrink: 0;
+}
+
+.category-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+.category-content h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.category-content p {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 0.8rem;
+}
+
+.product-count-badge {
+    display: inline-block;
+    background: #FF8700;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 .category-products-section {
     padding: 3rem 0;
     background-color: white;
@@ -124,6 +286,7 @@ function showNotification(message) {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
+    margin-bottom: 2rem;
 }
 
 .product-card {
@@ -196,6 +359,22 @@ function showNotification(message) {
     transform: scale(1.02);
 }
 
+.back-link {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.back-link a {
+    color: #FF8700;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.back-link a:hover {
+    color: #CC6B00;
+}
+
 .related-categories {
     padding: 4rem 0;
     background: #f9f9f9;
@@ -213,7 +392,7 @@ function showNotification(message) {
 
 .categories-quick-nav {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem;
 }
 
@@ -238,6 +417,16 @@ function showNotification(message) {
 @media (max-width: 768px) {
     .page-header h1 {
         font-size: 1.8rem;
+    }
+    
+    .category-card {
+        flex-direction: column;
+    }
+    
+    .category-icon {
+        width: 100%;
+        height: auto;
+        padding: 1.5rem 0;
     }
 }
 </style>

@@ -4,10 +4,54 @@
 <!-- Page Header -->
 <section class="page-header">
     <div class="container">
-        <h1>Our Products</h1>
-        <p>Discover our amazing collection of toys</p>
+        <h1>{% if view_mode == 'categories' %}Our Products{% elif view_mode == 'category' %}{{ category.name }}{% else %}All Products{% endif %}</h1>
+        <p>{% if view_mode == 'categories' %}Select a category or view all products{% elif view_mode == 'category' %}Products in {{ category.name }}{% else %}Discover our complete collection{% endif %}</p>
     </div>
 </section>
+
+<!-- CATEGORIES VIEW -->
+{% if view_mode == 'categories' %}
+<!-- Categories Grid -->
+<section class="categories-section">
+    <div class="container">
+        <div class="categories-grid" id="categories-grid">
+            {% for category in categories %}
+            <a href="{{ url_for('main.category_products', category_id=category.id) }}" class="category-card" data-category-id="{{ category.id }}">
+                <div class="category-icon">
+                    {% if 'Lego' in category.name %}
+                        🧱
+                    {% elif 'Toy Cars' in category.name or 'Masito' in category.name %}
+                        🚗
+                    {% elif 'Plush' in category.name %}
+                        🧸
+                    {% elif 'Board' in category.name %}
+                        🎲
+                    {% elif 'Arts' in category.name or 'Crafts' in category.name %}
+                        🎨
+                    {% elif 'Hotwheels' in category.name %}
+                        🏎️
+                    {% else %}
+                        🎁
+                    {% endif %}
+                </div>
+                <div class="category-info">
+                    <h3 class="category-name">{{ category.name }}</h3>
+                    <p class="category-description">{{ category.description }}</p>
+                    <span class="product-count">{{ category.products|length }} products</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+        <!-- View All Button -->
+        <div class="view-all-container">
+            <a href="{{ url_for('main.all_products') }}" class="btn btn-view-all">View All Products</a>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUCTS VIEW -->
+{% else %}
 
 <!-- Filter and Sort Section -->
 <section class="products-filter-section">
@@ -26,6 +70,9 @@
                 </select>
             </div>
         </div>
+        {% if view_mode == 'category' %}
+            <a href="{{ url_for('main.products') }}" class="btn btn-back">← Back to Categories</a>
+        {% endif %}
     </div>
 </section>
 
@@ -40,7 +87,7 @@
             <div class="product-card" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}">
                 <div class="product-image">
                     <span>🎁</span>
-                    <div class="product-badge">Toy</div>
+                    <div class="product-badge">{{ product.category.name if product.category else 'Toy' }}</div>
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
@@ -82,6 +129,8 @@
     </div>
 </section>
 
+{% endif %}
+
 <!-- CTA Section -->
 <section class="cta-section">
     <div class="container">
@@ -97,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-input');
     const sortSelect = document.getElementById('sort-select');
     
-    searchInput.addEventListener('keyup', filterProducts);
-    sortSelect.addEventListener('change', filterProducts);
+    if (searchInput) searchInput.addEventListener('keyup', filterProducts);
+    if (sortSelect) sortSelect.addEventListener('change', filterProducts);
 });
 
 function filterProducts() {
@@ -152,10 +201,123 @@ function filterProducts() {
     margin-bottom: 0.5rem;
 }
 
+/* CATEGORIES STYLES */
+.categories-section {
+    padding: 3rem 0;
+    background-color: white;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    border: 2px solid #eee;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    border-color: #FF8700;
+    box-shadow: 0 8px 24px rgba(255, 135, 0, 0.2);
+    transform: translateY(-5px);
+}
+
+.category-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.category-info {
+    text-align: center;
+}
+
+.category-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.category-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+}
+
+.product-count {
+    display: inline-block;
+    background: #FF8700;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.view-all-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-view-all {
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #FF8700 0%, #CC6B00 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.btn-view-all:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 135, 0, 0.3);
+}
+
+.btn-back {
+    padding: 0.6rem 1.2rem;
+    background: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.btn-back:hover {
+    background: #e0e0e0;
+}
+
+/* PRODUCTS STYLES */
 .products-filter-section {
     padding: 2rem 0;
     background-color: white;
     border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .filter-controls {
@@ -163,6 +325,7 @@ function filterProducts() {
     gap: 2rem;
     flex-wrap: wrap;
     align-items: center;
+    flex: 1;
 }
 
 .search-box {
@@ -222,6 +385,30 @@ function filterProducts() {
     gap: 2rem;
 }
 
+.product-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    transform: translateY(-5px);
+}
+
+.product-image {
+    position: relative;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    padding: 2rem;
+    text-align: center;
+    font-size: 2.5rem;
+}
+
 .product-badge {
     position: absolute;
     top: 10px;
@@ -234,8 +421,43 @@ function filterProducts() {
     font-weight: 600;
 }
 
-.product-image {
-    position: relative;
+.product-info {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.product-description {
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.product-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #FF8700;
+}
+
+.product-rating {
+    color: #f59e0b;
+    font-size: 0.9rem;
 }
 
 .no-results {
@@ -257,6 +479,11 @@ function filterProducts() {
     text-align: center;
     padding: 3rem 0;
     margin-top: 2rem;
+}
+
+.cta-section h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
 .add-to-cart-form {
@@ -313,12 +540,6 @@ function filterProducts() {
     background: #FF8700;
     color: white;
     transform: scale(1.1);
-}
-}
-
-.cta-section h2 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
 }
 </style>
 {% endblock %}

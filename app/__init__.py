@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
+from sqlalchemy import inspect, text
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -38,15 +39,41 @@ def create_app():
     with app.app_context():
         db.create_all()
         
+        # Add category_id column to products table if it doesn't exist
+        inspector = inspect(db.engine)
+        products_columns = [col['name'] for col in inspector.get_columns('products')]
+        
+        if 'category_id' not in products_columns:
+            with db.engine.connect() as connection:
+                connection.execute(text('ALTER TABLE products ADD COLUMN category_id INTEGER'))
+                connection.commit()
+        
         # Seed database with initial data if empty
-        from app.models import Product
+        from app.models import Product, Category
+        
+        # Create categories if they don't exist
+        if Category.query.first() is None:
+            categories_data = [
+                {'name': 'Lego', 'description': 'Building blocks and construction sets'},
+                {'name': 'Masito (Toy Cars)', 'description': 'Toy cars and racing sets'},
+                {'name': 'Plush toys', 'description': 'Soft and cuddly plush toys'},
+                {'name': 'Board games', 'description': 'Family and strategy board games'},
+                {'name': 'Arts and Crafts', 'description': 'Creative art and craft supplies'},
+                {'name': 'Hotwheels', 'description': 'Die-cast model cars'},
+            ]
+            for cat_data in categories_data:
+                category = Category(name=cat_data['name'], description=cat_data['description'])
+                db.session.add(category)
+            db.session.commit()
+        
         if Product.query.first() is None:
+            lego_cat = Category.query.filter_by(name='Lego').first()
             products = [
-                Product(name='Teddy Bear', price=19.99, description='Cute and cuddly teddy bear', stock=50),
-                Product(name='Building Blocks', price=29.99, description='Colorful building blocks set', stock=35),
-                Product(name='Action Figure', price=24.99, description='Superhero action figure', stock=40),
-                Product(name='Doll House', price=49.99, description='Beautiful dollhouse with furniture', stock=20),
-                Product(name='Board Game', price=34.99, description='Fun family board game', stock=30),
+                Product(name='Teddy Bear', price=19.99, description='Cute and cuddly teddy bear', stock=50, category_id=None),
+                Product(name='Building Blocks', price=29.99, description='Colorful building blocks set', stock=35, category_id=lego_cat.id if lego_cat else None),
+                Product(name='Action Figure', price=24.99, description='Superhero action figure', stock=40, category_id=None),
+                Product(name='Doll House', price=49.99, description='Beautiful dollhouse with furniture', stock=20, category_id=None),
+                Product(name='Board Game', price=34.99, description='Fun family board game', stock=30, category_id=None),
             ]
             for product in products:
                 db.session.add(product)

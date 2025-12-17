@@ -5,6 +5,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 import secrets
 
+class Category(db.Model):
+    """Product category model"""
+    __tablename__ = 'categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    products = db.relationship('Product', backref='category', lazy=True)
+    
+    def __repr__(self):
+        return f'<Category {self.name}>'
+
 class User(UserMixin, db.Model):
     """User model for authentication"""
     __tablename__ = 'users'
@@ -61,6 +75,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
     stock = db.Column(db.Integer, default=0)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
