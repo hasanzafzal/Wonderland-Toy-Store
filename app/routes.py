@@ -410,19 +410,21 @@ def admin_add_product():
         price = request.form.get('price')
         description = request.form.get('description')
         stock = request.form.get('stock')
+        category_id = request.form.get('category_id')
         
-        if not all([name, price, stock]):
-            flash('Name, price, and stock are required', 'error')
+        if not all([name, price, stock, category_id]):
+            flash('Name, price, stock, and category are required', 'error')
             return redirect(url_for('main.admin_add_product'))
         
-        product = Product(name=name, price=float(price), description=description, stock=int(stock))
+        product = Product(name=name, price=float(price), description=description, stock=int(stock), category_id=int(category_id))
         db.session.add(product)
         db.session.commit()
         
         flash('Product added successfully!', 'success')
         return redirect(url_for('main.admin_products'))
     
-    return render_template('admin/add_product.html', title='Add Product')
+    categories = Category.query.all()
+    return render_template('admin/add_product.html', title='Add Product', categories=categories)
 
 @main_bp.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @admin_required
@@ -435,12 +437,14 @@ def admin_edit_product(product_id):
         product.price = float(request.form.get('price'))
         product.description = request.form.get('description')
         product.stock = int(request.form.get('stock'))
+        product.category_id = int(request.form.get('category_id'))
         db.session.commit()
         
         flash('Product updated successfully!', 'success')
         return redirect(url_for('main.admin_products'))
     
-    return render_template('admin/edit_product.html', title='Edit Product', product=product)
+    categories = Category.query.all()
+    return render_template('admin/edit_product.html', title='Edit Product', product=product, categories=categories)
 
 @main_bp.route('/admin/products/delete/<int:product_id>')
 @admin_required
