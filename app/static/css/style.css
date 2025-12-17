@@ -371,6 +371,9 @@ body {
     cursor: pointer;
     transition: var(--transition);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    display: block;
+    text-decoration: none;
+    color: inherit;
 }
 
 .category-card:hover {

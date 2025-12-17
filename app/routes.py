@@ -10,7 +10,8 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """Homepage"""
-    return render_template('index.html', title='Wonderland Toy Store')
+    categories = Category.query.all()
+    return render_template('index.html', title='Wonderland Toy Store', categories=categories)
 
 @main_bp.route('/register', methods=['GET', 'POST'])
 def register():
