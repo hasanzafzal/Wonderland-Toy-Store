@@ -14,12 +14,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+RUN chmod +x /app/start.sh
+
 # Expose port
 EXPOSE 5000
 
-# Set environment variables
+# Environment variables
 ENV FLASK_APP=run.py
-ENV FLASK_ENV=production
+ENV FLASK_ENV=development
 
-# Run the application
-CMD ["python", "run.py"]
+# Run the startup script (which seeds DB then starts app)
+CMD ["/app/start.sh"]
