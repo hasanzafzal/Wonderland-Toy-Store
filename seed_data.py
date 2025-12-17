@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 """Seed script to create initial admin user and test data"""
 from app import create_app, db
@@ -14,6 +15,7 @@ with app.app_context():
         {'name': 'Board games', 'description': 'Family and strategy board games'},
         {'name': 'Arts and Crafts', 'description': 'Creative art and craft supplies'},
         {'name': 'Hotwheels', 'description': 'Die-cast model cars'},
+        {'name': 'Action Figures & Collectibles', 'description': 'Superhero and character action figures'},
     ]
     
     for cat_data in categories_data:
@@ -64,7 +66,34 @@ with app.app_context():
         db.session.commit()
         print(f"✓ {len(products)} test products created")
     else:
-        print(f"✓ {product_count} products already exist")
+        # Fix existing products without categories
+        lego_cat = Category.query.filter_by(name='Lego').first()
+        plush_cat = Category.query.filter_by(name='Plush toys').first()
+        games_cat = Category.query.filter_by(name='Board games').first()
+        arts_cat = Category.query.filter_by(name='Arts and Crafts').first()
+        cars_cat = Category.query.filter_by(name='Masito (Toy Cars)').first()
+        action_fig_cat = Category.query.filter_by(name='Action Figures & Collectibles').first()
+        
+        # Get all products with NULL category_id and assign them
+        products_without_category = Product.query.filter_by(category_id=None).all()
+        if products_without_category:
+            for product in products_without_category:
+                if 'Teddy' in product.name or 'Plush' in product.name or 'Bunny' in product.name:
+                    product.category_id = plush_cat.id if plush_cat else None
+                elif 'Lego' in product.name or 'Building' in product.name or 'Blocks' in product.name:
+                    product.category_id = lego_cat.id if lego_cat else None
+                elif 'Game' in product.name or 'Chess' in product.name:
+                    product.category_id = games_cat.id if games_cat else None
+                elif 'Art' in product.name or 'Craft' in product.name or 'Puzzle' in product.name:
+                    product.category_id = arts_cat.id if arts_cat else None
+                elif 'Action Figure' in product.name or 'Superhero' in product.name:
+                    product.category_id = action_fig_cat.id if action_fig_cat else None
+                elif 'Remote Control' in product.name or 'RC' in product.name:
+                    product.category_id = cars_cat.id if cars_cat else None
+            db.session.commit()
+            print(f"✓ Updated {len(products_without_category)} existing products with categories")
+        else:
+            print(f"✓ {product_count} products already exist with categories")
 
 print("\n🎉 Seed data initialized!")
 print("\nAdmin Login Credentials:")
