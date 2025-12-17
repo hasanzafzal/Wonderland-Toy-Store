@@ -223,6 +223,11 @@ def add_to_cart(product_id):
         cart_item = CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity)
         db.session.add(cart_item)
     
+    # Remove from wishlist if it exists
+    wishlist_item = Wishlist.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    if wishlist_item:
+        db.session.delete(wishlist_item)
+    
     db.session.commit()
     flash(f'{product.name} added to cart!', 'success')
     return redirect(url_for('main.view_cart'))
@@ -341,7 +346,7 @@ def add_to_wishlist(product_id):
     flash(f'{product.name} added to wishlist!', 'success')
     return redirect(url_for('main.products'))
 
-@main_bp.route('/wishlist/remove/<int:item_id>')
+@main_bp.route('/wishlist/remove/<int:item_id>', methods=['POST'])
 @login_required
 def remove_from_wishlist(item_id):
     """Remove product from wishlist"""

@@ -107,10 +107,10 @@
                             </div>
                             <div class="product-actions">
                                 <button type="submit" class="btn btn-add-cart">🛒 Add to Cart</button>
-                                <form method="POST" action="{{ url_for('main.add_to_wishlist', product_id=product.id) }}" class="wishlist-form" style="display:inline;">
-                                    <button type="submit" class="btn btn-wishlist" title="Add to Wishlist">❤️</button>
-                                </form>
                             </div>
+                        </form>
+                        <form method="POST" action="{{ url_for('main.add_to_wishlist', product_id=product.id) }}" class="wishlist-form" style="display:inline;">
+                            <button type="submit" class="btn btn-wishlist" title="Add to Wishlist">❤️</button>
                         </form>
                     {% else %}
                         <a href="{{ url_for('main.login', next=url_for('main.products')) }}" class="btn btn-add-cart">🔐 Login to Buy</a>

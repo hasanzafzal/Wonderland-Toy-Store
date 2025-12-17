@@ -29,14 +29,14 @@
                     </div>
                     <div class="item-actions">
                         {% if item.product.stock > 0 %}
-                            <form method="POST" action="{{ url_for('main.add_to_cart') }}" style="width: 100%;">
-                                <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <form method="POST" action="{{ url_for('main.add_to_cart', product_id=item.product.id) }}" style="width: 100%;">
+                                <input type="hidden" name="quantity" value="1">
                                 <button type="submit" class="btn-add-cart">🛒 Add to Cart</button>
                             </form>
                         {% else %}
                             <button class="btn-add-cart" disabled>Out of Stock</button>
                         {% endif %}
-                        <form method="POST" action="{{ url_for('main.remove_from_wishlist', product_id=item.product.id) }}">
+                        <form method="POST" action="{{ url_for('main.remove_from_wishlist', item_id=item.id) }}">
                             <button type="submit" class="btn-remove">Remove</button>
                         </form>
                     </div>
