@@ -27,7 +27,6 @@ share/python-wheels/
 MANIFEST
 
 # Flask
-instance/
 .webassets-cache
 
 # Testing
