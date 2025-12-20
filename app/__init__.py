@@ -17,6 +17,9 @@ def create_app():
     instance_path = os.path.join(basedir, 'instance')
     os.makedirs(instance_path, exist_ok=True)
     
+    # Ensure instance directory is writable
+    os.chmod(instance_path, 0o777)
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(instance_path, "store.db")}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
@@ -38,6 +41,11 @@ def create_app():
     # Create tables and seed data
     with app.app_context():
         db.create_all()
+        
+        # Ensure database file has proper permissions
+        db_path = os.path.join(instance_path, 'store.db')
+        if os.path.exists(db_path):
+            os.chmod(db_path, 0o666)
         
         # Add category_id column to products table if it doesn't exist
         inspector = inspect(db.engine)

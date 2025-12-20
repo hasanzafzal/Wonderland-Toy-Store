@@ -16,6 +16,9 @@ COPY . .
 
 RUN chmod +x /app/start.sh
 
+# Create instance directory and set permissions
+RUN mkdir -p /app/instance && chmod 777 /app/instance
+
 # Expose port
 EXPOSE 5000
 
