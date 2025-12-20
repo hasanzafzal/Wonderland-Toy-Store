@@ -19,6 +19,9 @@ RUN chmod +x /app/start.sh
 # Create instance directory and set permissions
 RUN mkdir -p /app/instance && chmod 777 /app/instance
 
+# Create products images directory and set permissions
+RUN mkdir -p /app/app/static/images/products && chmod 777 /app/app/static/images && chmod 777 /app/app/static/images/products
+
 # Expose port
 EXPOSE 5000
 

@@ -56,6 +56,12 @@ def create_app():
                 connection.execute(text('ALTER TABLE products ADD COLUMN category_id INTEGER'))
                 connection.commit()
         
+        # Add image_filename column to products table if it doesn't exist
+        if 'image_filename' not in products_columns:
+            with db.engine.connect() as connection:
+                connection.execute(text('ALTER TABLE products ADD COLUMN image_filename VARCHAR(255)'))
+                connection.commit()
+        
         # Seed database with initial data if empty
         from app.models import Product, Category
         

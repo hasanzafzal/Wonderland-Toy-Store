@@ -3,7 +3,38 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.models import Product, Order, User, Cart, CartItem, Wishlist, Category
 from app import db
 from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
 from functools import wraps
+import os
+from datetime import datetime
+
+# File upload configuration
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_product_image(file, product_id):
+    """Save product image and return filename"""
+    if not file or file.filename == '':
+        return None
+    
+    if not allowed_file(file.filename):
+        return None
+    
+    # Create uploads directory if it doesn't exist
+    upload_folder = os.path.join(os.path.dirname(__file__), 'static', 'images', 'products')
+    os.makedirs(upload_folder, exist_ok=True)
+    
+    # Create unique filename
+    ext = secure_filename(file.filename).rsplit('.', 1)[1].lower()
+    filename = f'product_{product_id}_{int(datetime.utcnow().timestamp())}.{ext}'
+    filepath = os.path.join(upload_folder, filename)
+    
+    # Save file
+    file.save(filepath)
+    return filename
 
 main_bp = Blueprint('main', __name__)
 
@@ -423,8 +454,20 @@ def admin_add_product():
         
         product = Product(name=name, price=float(price), description=description, stock=int(stock), category_id=int(category_id))
         db.session.add(product)
-        db.session.commit()
+        db.session.flush()  # Get the product ID without committing
         
+        # Handle image upload
+        if 'image' in request.files:
+            file = request.files['image']
+            image_filename = save_product_image(file, product.id)
+            if image_filename:
+                product.image_filename = image_filename
+            elif file.filename != '':
+                flash('Invalid file type. Only PNG, JPG, JPEG, and GIF are allowed.', 'error')
+                db.session.rollback()
+                return redirect(url_for('main.admin_add_product'))
+        
+        db.session.commit()
         flash('Product added successfully!', 'success')
         return redirect(url_for('main.admin_products'))
     
@@ -443,8 +486,24 @@ def admin_edit_product(product_id):
         product.description = request.form.get('description')
         product.stock = int(request.form.get('stock'))
         product.category_id = int(request.form.get('category_id'))
-        db.session.commit()
         
+        # Handle image upload
+        if 'image' in request.files:
+            file = request.files['image']
+            if file.filename != '':
+                image_filename = save_product_image(file, product.id)
+                if image_filename:
+                    # Delete old image if exists
+                    if product.image_filename:
+                        old_image_path = os.path.join(os.path.dirname(__file__), 'static', 'images', 'products', product.image_filename)
+                        if os.path.exists(old_image_path):
+                            os.remove(old_image_path)
+                    product.image_filename = image_filename
+                else:
+                    flash('Invalid file type. Only PNG, JPG, JPEG, and GIF are allowed.', 'error')
+                    return redirect(url_for('main.admin_edit_product', product_id=product.id))
+        
+        db.session.commit()
         flash('Product updated successfully!', 'success')
         return redirect(url_for('main.admin_products'))
     
