@@ -67,7 +67,7 @@
                                 <td>
                                     <select name="new_status" onchange="
                                         const newStatus = this.value;
-                                        const url = '{{ url_for('main.admin_update_order_status', order_id=order.id, new_status='PLACEHOLDER') }}'.replace('PLACEHOLDER', newStatus);
+                                        const url = '{{ url_for(&quot;main.admin_update_order_status&quot;, order_id=order.id, new_status=&quot;PLACEHOLDER&quot;) }}'.replace('PLACEHOLDER', newStatus);
                                         window.location.href = url;
                                     " class="status-select">
                                         <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
@@ -79,7 +79,7 @@
                                 </td>
                                 <td>{{ order.created_at.strftime('%m/%d/%Y') }}</td>
                                 <td>
-                                    <button class="btn-icon btn-view" title="View Details" onclick="showOrderDetails({{ order.id }})">👁️</button>
+                                    <button class="btn-icon btn-view" title="View Details" onclick="showOrderDetails(this)">👁️</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -335,12 +335,40 @@
 </style>
 
 <script>
-    function showOrderDetails(orderId) {
-        alert('Order #' + orderId + ' details modal');
+    function showOrderDetails(button) {
+        const row = button.closest('tr');
+        const orderId = row.querySelector('td:first-child').textContent.replace('#', '');
+        const customer = row.querySelector('.customer-info strong').textContent;
+        const email = row.querySelector('.customer-info small').textContent;
+        const product = row.cells[2].textContent;
+        const qty = row.cells[3].textContent;
+        const total = row.cells[4].textContent;
+        
+        const detailsHtml = `
+            <div style="text-align: left;">
+                <p><strong>Order ID:</strong> #${orderId}</p>
+                <p><strong>Customer:</strong> ${customer}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Product:</strong> ${product}</p>
+                <p><strong>Quantity:</strong> ${qty}</p>
+                <p><strong>Total:</strong> ${total}</p>
+            </div>
+        `;
+        
+        document.getElementById('orderDetails').innerHTML = detailsHtml;
+        document.getElementById('orderModal').style.display = 'block';
     }
     
     function closeOrderModal() {
         document.getElementById('orderModal').style.display = 'none';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('orderModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
     }
 </script>
 {% endblock %}
