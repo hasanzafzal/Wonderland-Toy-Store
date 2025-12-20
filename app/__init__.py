@@ -2,7 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect, text, event
+from sqlalchemy.pool import StaticPool
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -20,8 +21,15 @@ def create_app():
     # Ensure instance directory is writable
     os.chmod(instance_path, 0o777)
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(instance_path, "store.db")}'
+    db_path = os.path.join(instance_path, 'store.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}?timeout=10&check_same_thread=False'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'connect_args': {
+            'timeout': 10,
+            'check_same_thread': False
+        }
+    }
     
     # Initialize database
     db.init_app(app)
@@ -40,6 +48,17 @@ def create_app():
     
     # Create tables and seed data
     with app.app_context():
+        # Enable WAL mode for SQLite for better concurrency
+        @event.listens_for(db.engine, 'connect')
+        def set_sqlite_pragma(dbapi_conn, connection_record):
+            if 'sqlite' in str(db.engine.url):
+                cursor = dbapi_conn.cursor()
+                cursor.execute('PRAGMA journal_mode=WAL')
+                cursor.execute('PRAGMA synchronous=NORMAL')
+                cursor.execute('PRAGMA cache_size=-64000')
+                cursor.execute('PRAGMA foreign_keys=ON')
+                cursor.close()
+        
         db.create_all()
         
         # Ensure database file has proper permissions
