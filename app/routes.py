@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 import os
+import secrets
 from datetime import datetime
 
 # File upload configuration
@@ -343,6 +344,9 @@ def checkout():
         try:
             # Create orders for each item in cart
             for item in cart.items:
+                # Generate random tracking number
+                tracking_number = f"WTS{datetime.utcnow().strftime('%Y%m%d')}{secrets.token_hex(4).upper()}"
+                
                 order = Order(
                     user_id=current_user.id,
                     product_id=item.product_id,
@@ -356,7 +360,8 @@ def checkout():
                     state=state,
                     postal_code=postal_code,
                     payment_method=payment_method,
-                    payment_status=Order.PAYMENT_PENDING if payment_method != Order.PAYMENT_CASH_ON_DELIVERY else Order.PAYMENT_PENDING
+                    payment_status=Order.PAYMENT_PENDING if payment_method != Order.PAYMENT_CASH_ON_DELIVERY else Order.PAYMENT_PENDING,
+                    tracking_number=tracking_number
                 )
                 db.session.add(order)
             
