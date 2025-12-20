@@ -147,13 +147,36 @@ class Order(db.Model):
     STATUS_DELIVERED = 'delivered'
     STATUS_CANCELLED = 'cancelled'
     
+    # Payment method constants
+    PAYMENT_CARD = 'card'
+    PAYMENT_CASH_ON_DELIVERY = 'cash_on_delivery'
+    PAYMENT_PAYPAL = 'paypal'
+    
+    # Payment status constants
+    PAYMENT_PENDING = 'pending'
+    PAYMENT_COMPLETED = 'completed'
+    PAYMENT_FAILED = 'failed'
+    
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1, nullable=False)
     total_price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default=STATUS_PENDING)
+    
+    # Shipping details
+    full_name = db.Column(db.String(200), nullable=True)
+    email = db.Column(db.String(120), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
     shipping_address = db.Column(db.Text)
+    city = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(100), nullable=True)
+    postal_code = db.Column(db.String(20), nullable=True)
+    
+    # Payment details
+    payment_method = db.Column(db.String(50), default=PAYMENT_CASH_ON_DELIVERY)
+    payment_status = db.Column(db.String(20), default=PAYMENT_PENDING)
+    
     tracking_number = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

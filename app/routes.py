@@ -314,24 +314,64 @@ def checkout():
         return redirect(url_for('main.view_cart'))
     
     if request.method == 'POST':
-        # Create orders for each item in cart
-        for item in cart.items:
-            order = Order(
-                user_id=current_user.id,
-                product_id=item.product_id,
-                quantity=item.quantity,
-                total_price=item.product.price * item.quantity
-            )
-            db.session.add(order)
+        # Get form data
+        full_name = request.form.get('full_name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        shipping_address = request.form.get('shipping_address')
+        city = request.form.get('city')
+        state = request.form.get('state')
+        postal_code = request.form.get('postal_code')
+        payment_method = request.form.get('payment_method')
         
-        # Clear cart
-        CartItem.query.filter_by(cart_id=cart.id).delete()
-        db.session.commit()
+        # Validate required fields
+        if not all([full_name, email, phone, shipping_address, city, state, postal_code, payment_method]):
+            flash('All fields are required', 'error')
+            return redirect(url_for('main.checkout'))
         
-        flash('Order placed successfully!', 'success')
-        return redirect(url_for('main.orders'))
+        # Validate email format
+        if '@' not in email:
+            flash('Invalid email address', 'error')
+            return redirect(url_for('main.checkout'))
+        
+        # Validate payment method
+        valid_payment_methods = [Order.PAYMENT_CARD, Order.PAYMENT_CASH_ON_DELIVERY, Order.PAYMENT_PAYPAL]
+        if payment_method not in valid_payment_methods:
+            flash('Invalid payment method', 'error')
+            return redirect(url_for('main.checkout'))
+        
+        try:
+            # Create orders for each item in cart
+            for item in cart.items:
+                order = Order(
+                    user_id=current_user.id,
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                    total_price=item.product.price * item.quantity,
+                    full_name=full_name,
+                    email=email,
+                    phone=phone,
+                    shipping_address=shipping_address,
+                    city=city,
+                    state=state,
+                    postal_code=postal_code,
+                    payment_method=payment_method,
+                    payment_status=Order.PAYMENT_PENDING if payment_method != Order.PAYMENT_CASH_ON_DELIVERY else Order.PAYMENT_PENDING
+                )
+                db.session.add(order)
+            
+            # Clear cart
+            CartItem.query.filter_by(cart_id=cart.id).delete()
+            db.session.commit()
+            
+            flash('Order placed successfully! We will process your payment shortly.', 'success')
+            return redirect(url_for('main.orders'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while placing your order. Please try again.', 'error')
+            return redirect(url_for('main.checkout'))
     
-    return render_template('checkout.html', title='Checkout', cart=cart)
+    return render_template('checkout.html', title='Checkout', cart=cart, user=current_user)
 
 @main_bp.route('/orders')
 @login_required
