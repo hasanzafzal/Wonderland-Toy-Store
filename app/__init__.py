@@ -123,6 +123,14 @@ def create_app():
                 connection.execute(text("ALTER TABLE orders ADD COLUMN payment_status VARCHAR(20) DEFAULT 'pending'"))
                 connection.commit()
         
+        # Fix any empty string datetime values in users table
+        with db.engine.connect() as connection:
+            try:
+                connection.execute(text("UPDATE users SET reset_token_expires = NULL WHERE reset_token_expires = ''"))
+                connection.commit()
+            except:
+                pass  # If the operation fails, it's okay
+        
         # Seed database with initial data if empty
         from app.models import Product, Category
         
