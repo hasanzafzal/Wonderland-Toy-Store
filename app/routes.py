@@ -342,11 +342,30 @@ def checkout():
             flash('Invalid payment method', 'error')
             return redirect(url_for('main.checkout'))
         
+        # For card payment, redirect to payment page
+        if payment_method == Order.PAYMENT_CARD:
+            session['checkout_data'] = {
+                'full_name': full_name,
+                'email': email,
+                'phone': phone,
+                'shipping_address': shipping_address,
+                'city': city,
+                'state': state,
+                'postal_code': postal_code,
+                'payment_method': payment_method
+            }
+            return redirect(url_for('main.payment_card'))
+        
+        # For non-card payments, create orders directly
         try:
+            cart_total = cart.get_total()
+            
             # Create orders for each item in cart
             for item in cart.items:
                 # Generate random tracking number
                 tracking_number = f"WTS{datetime.utcnow().strftime('%Y%m%d')}{secrets.token_hex(4).upper()}"
+                # Generate unique transaction ID
+                transaction_id = f"TXN{datetime.utcnow().strftime('%Y%m%d%H%M%S')}{secrets.token_hex(6).upper()}"
                 
                 order = Order(
                     user_id=current_user.id,
@@ -361,8 +380,9 @@ def checkout():
                     state=state,
                     postal_code=postal_code,
                     payment_method=payment_method,
-                    payment_status=Order.PAYMENT_PENDING if payment_method != Order.PAYMENT_CASH_ON_DELIVERY else Order.PAYMENT_PENDING,
-                    tracking_number=tracking_number
+                    payment_status=Order.PAYMENT_COMPLETED if payment_method == Order.PAYMENT_PAYPAL else Order.PAYMENT_PENDING,
+                    tracking_number=tracking_number,
+                    transaction_id=transaction_id
                 )
                 db.session.add(order)
             
@@ -370,7 +390,7 @@ def checkout():
             CartItem.query.filter_by(cart_id=cart.id).delete()
             db.session.commit()
             
-            flash('Order placed successfully! We will process your payment shortly.', 'success')
+            flash('Order placed successfully! Check your email for confirmation.', 'success')
             return redirect(url_for('main.orders'))
         except Exception as e:
             db.session.rollback()
@@ -378,6 +398,101 @@ def checkout():
             return redirect(url_for('main.checkout'))
     
     return render_template('checkout.html', title='Checkout', cart=cart, user=current_user)
+
+@main_bp.route('/payment/card', methods=['GET', 'POST'])
+@login_required
+def payment_card():
+    """Process credit card payment"""
+    checkout_data = session.get('checkout_data')
+    
+    if not checkout_data:
+        flash('Invalid payment session. Please start checkout again.', 'error')
+        return redirect(url_for('main.checkout'))
+    
+    cart = current_user.cart
+    
+    if not cart or not cart.items:
+        flash('Your cart is empty', 'warning')
+        return redirect(url_for('main.view_cart'))
+    
+    if request.method == 'POST':
+        # Get card details from form
+        card_holder = request.form.get('card_holder')
+        card_number = request.form.get('card_number', '').replace(' ', '')
+        expiry_month = request.form.get('expiry_month')
+        expiry_year = request.form.get('expiry_year')
+        cvv = request.form.get('cvv')
+        save_card = request.form.get('save_card') == 'on'
+        
+        # Validate card details
+        if not all([card_holder, card_number, expiry_month, expiry_year, cvv]):
+            flash('All card fields are required', 'error')
+            return redirect(url_for('main.payment_card'))
+        
+        # Basic card validation
+        if len(card_number) not in [13, 14, 15, 16]:
+            flash('Invalid card number', 'error')
+            return redirect(url_for('main.payment_card'))
+        
+        if not card_number.isdigit():
+            flash('Card number must contain only digits', 'error')
+            return redirect(url_for('main.payment_card'))
+        
+        if len(cvv) not in [3, 4]:
+            flash('Invalid CVV', 'error')
+            return redirect(url_for('main.payment_card'))
+        
+        if not cvv.isdigit():
+            flash('CVV must contain only digits', 'error')
+            return redirect(url_for('main.payment_card'))
+        
+        try:
+            # Process payment (simulated)
+            # In a real app, this would call a payment gateway like Stripe or PayPal
+            
+            # Create orders for each item in cart
+            for item in cart.items:
+                # Generate random tracking number
+                tracking_number = f"WTS{datetime.utcnow().strftime('%Y%m%d')}{secrets.token_hex(4).upper()}"
+                # Generate unique transaction ID
+                transaction_id = f"TXN{datetime.utcnow().strftime('%Y%m%d%H%M%S')}{secrets.token_hex(6).upper()}"
+                
+                order = Order(
+                    user_id=current_user.id,
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                    total_price=item.product.price * item.quantity,
+                    full_name=checkout_data['full_name'],
+                    email=checkout_data['email'],
+                    phone=checkout_data['phone'],
+                    shipping_address=checkout_data['shipping_address'],
+                    city=checkout_data['city'],
+                    state=checkout_data['state'],
+                    postal_code=checkout_data['postal_code'],
+                    payment_method=Order.PAYMENT_CARD,
+                    payment_status=Order.PAYMENT_COMPLETED,
+                    tracking_number=tracking_number,
+                    transaction_id=transaction_id
+                )
+                db.session.add(order)
+            
+            # Clear cart
+            CartItem.query.filter_by(cart_id=cart.id).delete()
+            db.session.commit()
+            
+            # Clear session data
+            if 'checkout_data' in session:
+                session.pop('checkout_data')
+            
+            flash('Payment successful! Your order has been confirmed.', 'success')
+            return redirect(url_for('main.orders'))
+        
+        except Exception as e:
+            db.session.rollback()
+            flash('Payment processing failed. Please try again.', 'error')
+            return redirect(url_for('main.payment_card'))
+    
+    return render_template('payment_card.html', title='Card Payment', checkout_data=checkout_data, cart=cart, user=current_user)
 
 @main_bp.route('/orders')
 @login_required

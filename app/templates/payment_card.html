@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="payment-wrapper">
+        <div class="payment-main">
+            <h1>💳 Credit Card Payment</h1>
+            
+            <div class="order-summary-section">
+                <h2>Order Summary</h2>
+                <div class="order-items">
+                    {% for item in cart.items %}
+                        <div class="order-item">
+                            <div class="item-info">
+                                <h4>{{ item.product.name }}</h4>
+                                <p class="item-price">{{ item.quantity }} × ${{ "%.2f"|format(item.product.price) }}</p>
+                            </div>
+                            <div class="item-total">
+                                ${{ "%.2f"|format(item.product.price * item.quantity) }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <form method="POST" id="paymentForm" class="payment-form">
+                <div class="card-details-section">
+                    <h2>Enter Card Details</h2>
+                    
+                    <div class="card-preview">
+                        <div class="card-display">
+                            <div class="card-number-display" id="cardNumberDisplay">•••• •••• •••• ••••</div>
+                            <div class="card-info-row">
+                                <div class="card-holder-display" id="cardHolderDisplay">Card Holder Name</div>
+                                <div class="card-expiry-display" id="cardExpiryDisplay">MM/YY</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cardholder Name *</label>
+                        <input type="text" name="card_holder" id="cardHolder" required placeholder="John Doe" maxlength="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Card Number *</label>
+                        <input type="text" name="card_number" id="cardNumber" required placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date *</label>
+                            <div class="expiry-inputs">
+                                <input type="text" name="expiry_month" id="expiryMonth" required placeholder="MM" maxlength="2" inputmode="numeric" class="expiry-input">
+                                <span class="expiry-separator">/</span>
+                                <input type="text" name="expiry_year" id="expiryYear" required placeholder="YY" maxlength="2" inputmode="numeric" class="expiry-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>CVV *</label>
+                            <input type="text" name="cvv" id="cvv" required placeholder="123" maxlength="4" inputmode="numeric">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group checkbox">
+                        <input type="checkbox" name="save_card" id="saveCard">
+                        <label for="saveCard">Save this card for future purchases</label>
+                    </div>
+                </div>
+                
+                <div class="shipping-info-section">
+                    <h2>Shipping Information</h2>
+                    <div class="info-display">
+                        <p><strong>Name:</strong> {{ checkout_data.full_name }}</p>
+                        <p><strong>Email:</strong> {{ checkout_data.email }}</p>
+                        <p><strong>Phone:</strong> {{ checkout_data.phone }}</p>
+                        <p><strong>Address:</strong> {{ checkout_data.shipping_address }}</p>
+                        <p><strong>City:</strong> {{ checkout_data.city }}, {{ checkout_data.state }} {{ checkout_data.postal_code }}</p>
+                    </div>
+                </div>
+                
+                <div class="payment-actions">
+                    <button type="submit" class="btn btn-primary btn-pay">Complete Payment</button>
+                    <a href="{{ url_for('main.checkout') }}" class="btn btn-secondary">Back to Checkout</a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="payment-sidebar">
+            <div class="payment-total-card">
+                <h3>Payment Total</h3>
+                
+                <div class="price-breakdown">
+                    <div class="price-row">
+                        <span>Subtotal:</span>
+                        <span>${{ "%.2f"|format(cart.get_total()) }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Shipping:</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Tax (10%):</span>
+                        <span>${{ "%.2f"|format(cart.get_total() * 0.1) }}</span>
+                    </div>
+                </div>
+                
+                <div class="price-row total">
+                    <span>Total:</span>
+                    <span>${{ "%.2f"|format(cart.get_total() * 1.1) }}</span>
+                </div>
+                
+                <div class="security-info">
+                    <div class="security-badge">🔒</div>
+                    <p>Your card details are never stored and are processed securely.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .payment-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 30px;
+        margin: 40px auto;
+    }
+    
+    .payment-main {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .payment-main h1 {
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 28px;
+    }
+    
+    .order-summary-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .order-summary-section h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .order-items {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-info h4 {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+        color: #333;
+    }
+    
+    .item-price {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .item-total {
+        font-weight: bold;
+        color: #27ae60;
+        font-size: 16px;
+    }
+    
+    .card-details-section {
+        margin-bottom: 30px;
+    }
+    
+    .card-details-section h2 {
+        font-size: 18px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .card-preview {
+        margin-bottom: 25px;
+    }
+    
+    .card-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .card-number-display {
+        font-size: 24px;
+        letter-spacing: 2px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+    
+    .card-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    
+    .card-holder-display {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .card-expiry-display {
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+    
+    .form-group {
+        margin-bottom: 18px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group input[type="number"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .expiry-inputs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .expiry-input {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        text-align: center;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+    }
+    
+    .expiry-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .expiry-separator {
+        color: #999;
+        font-weight: bold;
+    }
+    
+    .form-group.checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .form-group.checkbox input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+    
+    .form-group.checkbox label {
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+    
+    .shipping-info-section {
+        background: #f0f7ff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .shipping-info-section h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .info-display p {
+        margin: 8px 0;
+        color: #555;
+        font-size: 14px;
+    }
+    
+    .info-display strong {
+        color: #333;
+    }
+    
+    .payment-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+        background: #e9ecef;
+        color: #333;
+        flex: 1;
+    }
+    
+    .btn-secondary:hover {
+        background: #dee2e6;
+    }
+    
+    .payment-sidebar {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .payment-total-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 20px;
+    }
+    
+    .payment-total-card h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .price-breakdown {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #eee;
+    }
+    
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .price-row.total {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 2px solid #eee;
+    }
+    
+    .security-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 15px;
+        background: #f0f7ff;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .security-badge {
+        font-size: 24px;
+    }
+    
+    .security-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #666;
+    }
+    
+    @media (max-width: 768px) {
+        .payment-wrapper {
+            grid-template-columns: 1fr;
+        }
+        
+        .payment-sidebar {
+            order: -1;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .payment-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+        
+        .payment-total-card {
+            position: static;
+        }
+    }
+</style>
+
+<script>
+// Card number formatting
+document.getElementById('cardNumber').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\s/g, '');
+    let formattedValue = value.replace(/(\d{4})/g, '$1 ').trim();
+    e.target.value = formattedValue;
+    
+    // Update card display
+    const lastFour = value.slice(-4).padStart(4, '•');
+    const firstPart = '•••• •••• ••••';
+    if (value.length > 0) {
+        document.getElementById('cardNumberDisplay').textContent = firstPart.slice(0, -4) + lastFour;
+    } else {
+        document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ••••';
+    }
+});
+
+// Card holder name update
+document.getElementById('cardHolder').addEventListener('input', function(e) {
+    const name = e.target.value || 'Card Holder Name';
+    document.getElementById('cardHolderDisplay').textContent = name.toUpperCase();
+});
+
+// Expiry date formatting
+document.getElementById('expiryMonth').addEventListener('input', function(e) {
+    if (e.target.value.length === 2) {
+        document.getElementById('expiryYear').focus();
+    }
+    updateExpiryDisplay();
+});
+
+document.getElementById('expiryYear').addEventListener('input', function(e) {
+    updateExpiryDisplay();
+});
+
+function updateExpiryDisplay() {
+    const month = document.getElementById('expiryMonth').value || 'MM';
+    const year = document.getElementById('expiryYear').value || 'YY';
+    document.getElementById('cardExpiryDisplay').textContent = month + '/' + year;
+}
+
+// CVV field - only allow numbers
+document.getElementById('cvv').addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/[^\d]/g, '');
+});
+
+// Form validation
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    const month = parseInt(document.getElementById('expiryMonth').value);
+    const year = parseInt(document.getElementById('expiryYear').value);
+    
+    if (month < 1 || month > 12) {
+        e.preventDefault();
+        alert('Invalid expiry month. Must be between 01 and 12.');
+        return false;
+    }
+    
+    return true;
+});
+</script>
+{% endblock %}

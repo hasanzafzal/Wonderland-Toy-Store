@@ -20,6 +20,22 @@
                     
                     <div class="order-details">
                         <div class="detail-row">
+                            <span class="label">Transaction ID:</span>
+                            <span class="value transaction-id">{{ order.transaction_id or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Tracking Number:</span>
+                            <span class="value">{{ order.tracking_number or 'Pending' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Payment Method:</span>
+                            <span class="value">{{ order.payment_method.replace('_', ' ').title() }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Payment Status:</span>
+                            <span class="value">{{ order.payment_status.title() }}</span>
+                        </div>
+                        <div class="detail-row">
                             <span class="label">Product:</span>
                             <span class="value">{{ order.product.name }}</span>
                         </div>
@@ -144,6 +160,15 @@
         color: #333;
         text-align: right;
         flex: 1;
+    }
+    
+    .detail-row .transaction-id {
+        font-family: 'Courier New', monospace;
+        background: #f5f5f5;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
     }
     
     .order-footer {

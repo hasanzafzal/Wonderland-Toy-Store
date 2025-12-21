@@ -71,57 +71,55 @@ def create_app():
         products_columns = [col['name'] for col in inspector.get_columns('products')]
         orders_columns = [col['name'] for col in inspector.get_columns('orders')]
         
+        # Helper function to refresh column list
+        def refresh_columns():
+            nonlocal products_columns, orders_columns
+            inspector = inspect(db.engine)
+            products_columns = [col['name'] for col in inspector.get_columns('products')]
+            orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+        
         if 'category_id' not in products_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE products ADD COLUMN category_id INTEGER'))
-                connection.commit()
+            try:
+                with db.engine.connect() as connection:
+                    connection.execute(text('ALTER TABLE products ADD COLUMN category_id INTEGER'))
+                    connection.commit()
+                refresh_columns()
+            except:
+                pass
         
         # Add image_filename column to products table if it doesn't exist
         if 'image_filename' not in products_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE products ADD COLUMN image_filename VARCHAR(255)'))
-                connection.commit()
+            try:
+                with db.engine.connect() as connection:
+                    connection.execute(text('ALTER TABLE products ADD COLUMN image_filename VARCHAR(255)'))
+                    connection.commit()
+                refresh_columns()
+            except:
+                pass
         
         # Add shipping and payment columns to orders table if they don't exist
-        if 'full_name' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE orders ADD COLUMN full_name VARCHAR(200)'))
-                connection.commit()
+        order_columns_to_add = [
+            ('full_name', 'VARCHAR(200)'),
+            ('email', 'VARCHAR(120)'),
+            ('phone', 'VARCHAR(20)'),
+            ('city', 'VARCHAR(100)'),
+            ('state', 'VARCHAR(100)'),
+            ('postal_code', 'VARCHAR(20)'),
+            ('payment_method', "VARCHAR(50) DEFAULT 'cash_on_delivery'"),
+            ('payment_status', "VARCHAR(20) DEFAULT 'pending'"),
+            ('transaction_id', 'VARCHAR(100)'),
+        ]
         
-        if 'email' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE orders ADD COLUMN email VARCHAR(120)'))
-                connection.commit()
-        
-        if 'phone' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE orders ADD COLUMN phone VARCHAR(20)'))
-                connection.commit()
-        
-        if 'city' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE orders ADD COLUMN city VARCHAR(100)'))
-                connection.commit()
-        
-        if 'state' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE orders ADD COLUMN state VARCHAR(100)'))
-                connection.commit()
-        
-        if 'postal_code' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text('ALTER TABLE orders ADD COLUMN postal_code VARCHAR(20)'))
-                connection.commit()
-        
-        if 'payment_method' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text("ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT 'cash_on_delivery'"))
-                connection.commit()
-        
-        if 'payment_status' not in orders_columns:
-            with db.engine.connect() as connection:
-                connection.execute(text("ALTER TABLE orders ADD COLUMN payment_status VARCHAR(20) DEFAULT 'pending'"))
-                connection.commit()
+        for column_name, column_type in order_columns_to_add:
+            if column_name not in orders_columns:
+                try:
+                    with db.engine.connect() as connection:
+                        connection.execute(text(f'ALTER TABLE orders ADD COLUMN {column_name} {column_type}'))
+                        connection.commit()
+                    refresh_columns()
+                except Exception as e:
+                    # Column might already exist or other error - continue
+                    pass
         
         # Fix any empty string datetime values in users table
         with db.engine.connect() as connection:

@@ -177,6 +177,7 @@ class Order(db.Model):
     # Payment details
     payment_method = db.Column(db.String(50), default=PAYMENT_CASH_ON_DELIVERY)
     payment_status = db.Column(db.String(20), default=PAYMENT_PENDING)
+    transaction_id = db.Column(db.String(100), nullable=True)
     
     tracking_number = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
