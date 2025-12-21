@@ -99,7 +99,18 @@
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
-                    <p class="product-description">{{ product.description or 'Premium toy product' }}</p>
+                    <p class="product-description product-short-description" style="display: none;">{{ product.description or 'Premium toy product' }}</p>
+                    <div class="product-details-section" style="display: none;">
+                        <div class="product-details-content">
+                            <p class="product-full-description">{{ product.description or 'Premium toy product' }}</p>
+                            {% if product.stock > 0 %}
+                                <p class="product-stock"><strong>Stock:</strong> <span class="stock-available">{{ product.stock }} in stock</span></p>
+                            {% else %}
+                                <p class="product-stock"><strong>Stock:</strong> <span class="stock-unavailable">Out of stock</span></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="btn btn-details" onclick="toggleDetails(this)">Details</button>
                     <div class="product-footer">
                         <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
                         <div class="product-rating">⭐ 4.8</div>
@@ -157,6 +168,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) searchInput.addEventListener('keyup', filterProducts);
     if (sortSelect) sortSelect.addEventListener('change', filterProducts);
 });
+
+function toggleDetails(button) {
+    const productCard = button.closest('.product-card');
+    const detailsSection = productCard.querySelector('.product-details-section');
+    const shortDescription = productCard.querySelector('.product-short-description');
+    
+    if (detailsSection.style.display === 'none') {
+        detailsSection.style.display = 'block';
+        shortDescription.style.display = 'block';
+        button.classList.add('active');
+    } else {
+        detailsSection.style.display = 'none';
+        shortDescription.style.display = 'none';
+        button.classList.remove('active');
+    }
+}
 
 function filterProducts() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -465,11 +492,115 @@ function filterProducts() {
     flex-grow: 1;
 }
 
+.product-short-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-details-section {
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
+.product-details-content {
+    font-size: 0.85rem;
+}
+
+.product-full-description {
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 0.8rem;
+    word-wrap: break-word;
+}
+
+.product-stock {
+    color: #555;
+    margin: 0;
+}
+
+.stock-available {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.stock-unavailable {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.btn-more-details {
+    padding: 0.6rem 1rem;
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.btn-more-details:hover {
+    background: #e0e0e0;
+    border-color: #FF8700;
+}
+
+.btn-more-details.active {
+    background: #FF8700;
+    color: white;
+    border-color: #FF8700;
+}
+
+.btn-details {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: #FF8700;
+    border: 1.5px solid #FF8700;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-bottom: 0.8rem;
+    width: 100%;
+}
+
+.btn-details:hover {
+    background: #FF8700;
+    color: white;
+    transform: scale(1.02);
+}
+
+.btn-details.active {
+    background: #FF8700;
+    color: white;
+}
+
 .product-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    min-height: 2rem;
 }
 
 .product-price {
@@ -514,12 +645,14 @@ function filterProducts() {
     flex-direction: column;
     gap: 0.5rem;
     width: 100%;
+    margin-bottom: 0;
 }
 
 .product-actions {
     display: flex;
     gap: 0.5rem;
     width: 100%;
+    height: 2.6rem;
 }
 
 .quantity-input input {
@@ -528,6 +661,8 @@ function filterProducts() {
     border: 1px solid #ddd;
     border-radius: 5px;
     text-align: center;
+    height: 2.6rem;
+}
 }
 
 .btn-add-cart {
@@ -540,6 +675,10 @@ function filterProducts() {
     cursor: pointer;
     font-weight: 600;
     transition: all 0.3s;
+    height: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-add-cart:hover {
