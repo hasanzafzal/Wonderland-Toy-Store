@@ -16,6 +16,7 @@ with app.app_context():
         {'name': 'Arts and Crafts', 'description': 'Creative art and craft supplies'},
         {'name': 'Hotwheels', 'description': 'Die-cast model cars'},
         {'name': 'Action Figures & Collectibles', 'description': 'Superhero and character action figures'},
+        {'name': 'Barbie', 'description': 'Barbie dolls and accessories'},
     ]
     
     for cat_data in categories_data:
