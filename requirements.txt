@@ -4,4 +4,4 @@ Jinja2==3.1.2
 click==8.1.7
 Flask-SQLAlchemy==3.0.5
 SQLAlchemy==2.0.23
-Flask-Login==0.6.3
+Flask-Login==0.6.3gunicorn>=20.1.0
