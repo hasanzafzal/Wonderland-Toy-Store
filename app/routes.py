@@ -619,3 +619,21 @@ def admin_remove_admin(user_id):
     
     flash(f'{user.username} admin privileges removed', 'success')
     return redirect(url_for('main.admin_users'))
+
+@main_bp.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    """Delete a user"""
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting the current user
+    if user.id == current_user.id:
+        flash('You cannot delete your own account', 'error')
+        return redirect(url_for('main.admin_users'))
+    
+    username = user.username
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f'User "{username}" deleted successfully', 'success')
+    return redirect(url_for('main.admin_users'))
