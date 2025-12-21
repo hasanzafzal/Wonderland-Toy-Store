@@ -303,6 +303,23 @@
     </style>
     
     <script>
+        // Auto-dismiss alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(function() {
+                    // Fade out animation
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    
+                    // Remove after fade animation completes
+                    setTimeout(function() {
+                        alert.style.display = 'none';
+                    }, 500);
+                }, 5000); // 5 seconds
+            });
+        });
+        
         // User menu dropdown toggle
         const userMenu = document.getElementById('userMenuToggle');
         const userDropdown = document.getElementById('userDropdown');
