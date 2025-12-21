@@ -19,6 +19,6 @@ dependencies = [
 ]
 
 [project.scripts]
-app = "app:app"
+app = "app.app:app"
 
 [tool.setuptools.packages.find]
