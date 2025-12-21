@@ -12,11 +12,7 @@
             {% for item in wishlist_items %}
                 <div class="wishlist-item">
                     <div class="product-image">
-                        {% if item.product.image_filename %}
-                            <img src="/static/images/products/{{ item.product.image_filename }}" alt="{{ item.product.name }}" class="product-img">
-                        {% else %}
-                            <div class="image-placeholder">🎁</div>
-                        {% endif %}
+                        <div class="image-placeholder">{{ item.product.name[:1] }}</div>
                     </div>
                     <div class="item-content">
                         <h3>{{ item.product.name }}</h3>
@@ -114,14 +110,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
-    }
-    
-    .product-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
     }
     
     .image-placeholder {
