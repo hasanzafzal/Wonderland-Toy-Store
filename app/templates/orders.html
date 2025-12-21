@@ -14,7 +14,7 @@
                             <p class="order-date">{{ order.created_at.strftime('%B %d, %Y') }}</p>
                         </div>
                         <div class="order-status">
-                            <span class="status-badge status-confirmed">✓ Confirmed</span>
+                            <span class="status-badge status-{{ order.status }}">{{ order.status.title() }}</span>
                         </div>
                     </div>
                     
@@ -131,6 +131,39 @@
     .status-confirmed {
         background: rgba(255, 255, 255, 0.3);
         color: white;
+    }
+    
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-pending {
+        background: #FFF3CD;
+        color: #856404;
+    }
+    
+    .status-processing {
+        background: #D1ECF1;
+        color: #0C5460;
+    }
+    
+    .status-shipped {
+        background: #CCE5FF;
+        color: #004085;
+    }
+    
+    .status-delivered {
+        background: #D4EDDA;
+        color: #155724;
+    }
+    
+    .status-cancelled {
+        background: #F8D7DA;
+        color: #721C24;
     }
     
     .order-details {

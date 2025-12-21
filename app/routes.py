@@ -240,6 +240,16 @@ def add_to_cart(product_id):
     product = Product.query.get_or_404(product_id)
     quantity = request.form.get('quantity', 1, type=int)
     
+    # Validate quantity is positive
+    if quantity <= 0:
+        flash('Quantity must be greater than 0', 'error')
+        return redirect(request.referrer or url_for('main.products'))
+    
+    # Check stock availability
+    if quantity > product.stock:
+        flash(f'Only {product.stock} units of {product.name} in stock. Cannot add {quantity} to cart.', 'error')
+        return redirect(request.referrer or url_for('main.products'))
+    
     # Get or create cart
     cart = current_user.cart
     if not cart:
@@ -250,7 +260,12 @@ def add_to_cart(product_id):
     # Check if item already in cart
     cart_item = CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
     
+    # Validate total quantity won't exceed stock
     if cart_item:
+        total_quantity = cart_item.quantity + quantity
+        if total_quantity > product.stock:
+            flash(f'Cannot add {quantity} more units. Only {product.stock - cart_item.quantity} units available to add.', 'error')
+            return redirect(request.referrer or url_for('main.products'))
         cart_item.quantity += quantity
     else:
         cart_item = CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity)
@@ -263,7 +278,7 @@ def add_to_cart(product_id):
     
     db.session.commit()
     flash(f'{product.name} added to cart!', 'success')
-    return redirect(url_for('main.view_cart'))
+    return redirect(request.referrer or url_for('main.view_cart'))
 
 @main_bp.route('/cart/remove/<int:item_id>')
 @login_required
@@ -295,12 +310,21 @@ def update_cart_item(item_id):
         return redirect(url_for('main.view_cart'))
     
     quantity = request.form.get('quantity', 1, type=int)
+    product = cart_item.product
     
-    if quantity > 0:
-        cart_item.quantity = quantity
-    else:
+    # Validate quantity
+    if quantity <= 0:
         db.session.delete(cart_item)
+        db.session.commit()
+        flash('Item removed from cart', 'info')
+        return redirect(url_for('main.view_cart'))
     
+    # Validate against stock
+    if quantity > product.stock:
+        flash(f'Only {product.stock} units of {product.name} in stock. Cannot update to {quantity}.', 'error')
+        return redirect(url_for('main.view_cart'))
+    
+    cart_item.quantity = quantity
     db.session.commit()
     flash('Cart updated!', 'success')
     return redirect(url_for('main.view_cart'))
@@ -385,6 +409,12 @@ def checkout():
                     transaction_id=transaction_id
                 )
                 db.session.add(order)
+                
+                # Deduct stock from product when order is created
+                product = item.product
+                product.stock -= item.quantity
+                if product.stock < 0:
+                    product.stock = 0
             
             # Clear cart
             CartItem.query.filter_by(cart_id=cart.id).delete()
@@ -475,6 +505,12 @@ def payment_card():
                     transaction_id=transaction_id
                 )
                 db.session.add(order)
+                
+                # Deduct stock from product when order is created
+                product = item.product
+                product.stock -= item.quantity
+                if product.stock < 0:
+                    product.stock = 0
             
             # Clear cart
             CartItem.query.filter_by(cart_id=cart.id).delete()
@@ -714,7 +750,21 @@ def admin_update_order_status(order_id, new_status):
         flash('Invalid status', 'error')
         return redirect(url_for('main.admin_orders'))
     
+    old_status = order.status
     order.status = new_status
+    
+    # Handle stock restoration if order is cancelled
+    if new_status == 'cancelled' and old_status != 'cancelled':
+        product = order.product
+        product.stock += order.quantity
+    
+    # Handle stock deduction if order is restored from cancelled
+    if old_status == 'cancelled' and new_status != 'cancelled':
+        product = order.product
+        product.stock -= order.quantity
+        if product.stock < 0:
+            product.stock = 0
+    
     db.session.commit()
     
     flash(f'Order status updated to {new_status}', 'success')

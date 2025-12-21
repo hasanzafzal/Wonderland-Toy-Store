@@ -24,9 +24,10 @@
                                 <td>${{ "%.2f"|format(item.product.price) }}</td>
                                 <td>
                                     <form method="POST" action="{{ url_for('main.update_cart_item', item_id=item.id) }}" class="quantity-form">
-                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="100">
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
                                         <button type="submit" class="btn btn-sm btn-secondary">Update</button>
                                     </form>
+                                    <small style="color: #666; display: block; margin-top: 5px;">Available: {{ item.product.stock }} units</small>
                                 </td>
                                 <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
                                 <td>
