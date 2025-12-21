@@ -138,7 +138,6 @@ def create_app():
         if Category.query.first() is None:
             categories_data = [
                 {'name': 'Lego', 'description': 'Building blocks and construction sets'},
-                {'name': 'Masito (Toy Cars)', 'description': 'Toy cars and racing sets'},
                 {'name': 'Plush toys', 'description': 'Soft and cuddly plush toys'},
                 {'name': 'Board games', 'description': 'Family and strategy board games'},
                 {'name': 'Arts and Crafts', 'description': 'Creative art and craft supplies'},

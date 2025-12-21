@@ -28,8 +28,6 @@
                 <div class="category-icon">
                     {% if cat.name == 'Lego' %}
                         🧱
-                    {% elif cat.name == 'Masito (Toy Cars)' %}
-                        🚗
                     {% elif cat.name == 'Plush toys' %}
                         🧸
                     {% elif cat.name == 'Board games' %}
@@ -68,8 +66,6 @@
                 <div class="product-image">
                     {% if category.name == 'Lego' %}
                         🧱
-                    {% elif category.name == 'Masito (Toy Cars)' %}
-                        🚗
                     {% elif category.name == 'Plush toys' %}
                         🧸
                     {% elif category.name == 'Board games' %}
@@ -118,7 +114,6 @@
         <div class="categories-quick-nav">
             <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">📚 All Categories</a>
             <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🧱 Lego</a>
-            <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🚗 Masito Cars</a>
             <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🧸 Plush Toys</a>
             <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🎲 Board Games</a>
             <a href="{{ url_for('main.all_categories') }}" class="category-nav-item">🎨 Arts & Crafts</a>

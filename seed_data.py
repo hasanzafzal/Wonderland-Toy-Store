@@ -10,7 +10,6 @@ with app.app_context():
     # Create categories
     categories_data = [
         {'name': 'Lego', 'description': 'Building blocks and construction sets'},
-        {'name': 'Masito (Toy Cars)', 'description': 'Toy cars and racing sets'},
         {'name': 'Plush toys', 'description': 'Soft and cuddly plush toys'},
         {'name': 'Board games', 'description': 'Family and strategy board games'},
         {'name': 'Arts and Crafts', 'description': 'Creative art and craft supplies'},
@@ -43,7 +42,6 @@ with app.app_context():
     product_count = Product.query.count()
     if product_count == 0:
         lego_cat = Category.query.filter_by(name='Lego').first()
-        cars_cat = Category.query.filter_by(name='Masito (Toy Cars)').first()
         plush_cat = Category.query.filter_by(name='Plush toys').first()
         games_cat = Category.query.filter_by(name='Board games').first()
         arts_cat = Category.query.filter_by(name='Arts and Crafts').first()
@@ -52,8 +50,6 @@ with app.app_context():
         products = [
             Product(name='Lego City Set', price=49.99, description='Build your own city with this classic Lego set', stock=20, category_id=lego_cat.id),
             Product(name='Lego Creator Space Rocket', price=79.99, description='Three models in one', stock=15, category_id=lego_cat.id),
-            Product(name='Masito Sport Car', price=15.99, description='Fast and furious toy sports car', stock=30, category_id=cars_cat.id),
-            Product(name='Masito Racing Set', price=34.99, description='Complete racing track with multiple cars', stock=25, category_id=cars_cat.id),
             Product(name='Soft Teddy Bear', price=24.99, description='Cuddly teddy bear perfect for all ages', stock=25, category_id=plush_cat.id),
             Product(name='Pink Bunny Plush', price=19.99, description='Adorable pink bunny plush toy', stock=20, category_id=plush_cat.id),
             Product(name='Classic Board Game Pack', price=39.99, description='Collection of classic family board games', stock=18, category_id=games_cat.id),
@@ -72,9 +68,7 @@ with app.app_context():
         plush_cat = Category.query.filter_by(name='Plush toys').first()
         games_cat = Category.query.filter_by(name='Board games').first()
         arts_cat = Category.query.filter_by(name='Arts and Crafts').first()
-        cars_cat = Category.query.filter_by(name='Masito (Toy Cars)').first()
         action_fig_cat = Category.query.filter_by(name='Action Figures & Collectibles').first()
-        
         # Get all products with NULL category_id and assign them
         products_without_category = Product.query.filter_by(category_id=None).all()
         if products_without_category:
@@ -90,8 +84,6 @@ with app.app_context():
                 elif 'Action Figure' in product.name or 'Superhero' in product.name:
                     product.category_id = action_fig_cat.id if action_fig_cat else None
                 elif 'Remote Control' in product.name or 'RC' in product.name:
-                    product.category_id = cars_cat.id if cars_cat else None
-            db.session.commit()
             print(f"✓ Updated {len(products_without_category)} existing products with categories")
         else:
             print(f"✓ {product_count} products already exist with categories")
