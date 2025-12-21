@@ -1,19 +1,5 @@
-[build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "wonderland-toy-store"
 version = "0.1.0"
 description = "Wonderland Toy Store - Flask web application"
 requires-python = ">=3.8"
-dependencies = [
-    "Flask==2.3.3",
-    "Werkzeug==2.3.7",
-    "Jinja2==3.1.2",
-    "click==8.1.7",
-    "Flask-SQLAlchemy==3.0.5",
-    "SQLAlchemy==2.0.23",
-    "Flask-Login==0.6.3",
-    "gunicorn>=20.1.0",
-]
