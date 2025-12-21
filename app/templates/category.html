@@ -83,7 +83,7 @@
                     <p class="product-description">{{ product.description }}</p>
                     <div class="product-footer">
                         <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
-                        <div class="product-rating">⭐ 4.8</div>
+                        <div class="product-rating">⭐ <span class="rating-value">4.8</span></div>
                     </div>
                     <form method="POST" action="{{ url_for('main.add_to_cart', product_id=product.id) }}" class="add-to-cart-form">
                         <input type="hidden" name="quantity" value="1">

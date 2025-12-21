@@ -112,7 +112,7 @@
                     <button class="btn btn-details" onclick="toggleDetails(this)">Show Details</button>
                     <div class="product-footer">
                         <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
-                        <div class="product-rating">⭐ 4.8</div>
+                        <div class="product-rating">⭐ <span class="rating-value">4.8</span></div>
                     </div>
                     {% if current_user.is_authenticated %}
                         <form method="POST" action="{{ url_for('main.add_to_cart', product_id=product.id) }}" class="add-to-cart-form">

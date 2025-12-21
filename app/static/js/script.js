@@ -247,3 +247,14 @@ document.addEventListener('keydown', function(e) {
         document.querySelector('#featured').scrollIntoView({ behavior: 'smooth' });
     }
 });
+// Randomize product ratings (between 4.0 and 5.0)
+function randomizeRatings() {
+    const ratingElements = document.querySelectorAll('.rating-value');
+    ratingElements.forEach(element => {
+        const randomRating = (Math.random() * 1 + 4).toFixed(1); // 4.0 to 5.0
+        element.textContent = randomRating;
+    });
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', randomizeRatings);
