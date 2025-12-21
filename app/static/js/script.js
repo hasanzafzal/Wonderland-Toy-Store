@@ -15,18 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Category cards
     setupCategoryCards();
+    
+    // Randomize product ratings
+    randomizeRatings();
 });
-        
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = '';
-        }, 2000);
-        
-        // Log to console (in real app, would add to cart state)
-        console.log(`Added ${product.name} to cart`);
-        showNotification(`${product.name} added to cart!`);
-    }
-}
 
 // Handle newsletter form submission
 function handleNewsletterSubmit(e) {
@@ -149,6 +141,3 @@ function randomizeRatings() {
         element.textContent = randomRating;
     });
 }
-
-// Run on page load
-document.addEventListener('DOMContentLoaded', randomizeRatings);
