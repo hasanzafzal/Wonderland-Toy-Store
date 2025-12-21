@@ -632,6 +632,16 @@ def admin_delete_user(user_id):
         return redirect(url_for('main.admin_users'))
     
     username = user.username
+    
+    # Delete user's cart if it exists
+    if user.cart:
+        db.session.delete(user.cart)
+    
+    # Delete user's wishlist items
+    for wishlist_item in user.wishlist_items:
+        db.session.delete(wishlist_item)
+    
+    # Delete the user
     db.session.delete(user)
     db.session.commit()
     
