@@ -43,7 +43,8 @@ main_bp = Blueprint('main', __name__)
 def index():
     """Homepage"""
     categories = Category.query.all()
-    return render_template('index.html', title='Wonderland Toy Store', categories=categories)
+    featured_products = Product.query.filter_by(is_featured=True).all()
+    return render_template('index.html', title='Wonderland Toy Store', categories=categories, featured_products=featured_products)
 
 @main_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -566,6 +567,19 @@ def admin_delete_product(product_id):
     
     flash(f'Product "{product_name}" deleted successfully!', 'success')
     return redirect(url_for('main.admin_products'))
+
+@main_bp.route('/admin/products/<int:product_id>/toggle-feature', methods=['POST'])
+@admin_required
+def admin_toggle_product_feature(product_id):
+    """Toggle product featured status"""
+    product = Product.query.get_or_404(product_id)
+    product.is_featured = not product.is_featured
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'is_featured': product.is_featured
+    })
 
 @main_bp.route('/admin/orders')
 @admin_required

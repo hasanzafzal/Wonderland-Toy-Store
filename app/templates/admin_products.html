@@ -35,7 +35,9 @@
                         {% for product in products %}
                             <tr>
                                 <td>#{{ product.id }}</td>
-                                <td>{{ product.name }}</td>
+                                <td>
+                                    {{ product.name }}
+                                </td>
                                 <td>${{ "%.2f"|format(product.price) }}</td>
                                 <td>
                                     <span class="stock-badge {% if product.stock > 10 %}stock-high{% elif product.stock > 0 %}stock-medium{% else %}stock-low{% endif %}">
@@ -52,6 +54,12 @@
                                 <td>{{ product.created_at.strftime('%m/%d/%Y') }}</td>
                                 <td>
                                     <div class="action-buttons">
+                                        <button class="btn-feature-toggle {% if product.is_featured %}featured{% endif %}" 
+                                                data-product-id="{{ product.id }}"
+                                                type="button"
+                                                title="{% if product.is_featured %}Remove from featured{% else %}Add to featured{% endif %}">
+                                            {% if product.is_featured %}⭐{% else %}☆{% endif %}
+                                        </button>
                                         <a href="{{ url_for('main.admin_edit_product', product_id=product.id) }}" class="btn-icon btn-edit" title="Edit">✏️</a>
                                         <a href="{{ url_for('main.admin_delete_product', product_id=product.id) }}" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')">🗑️</a>
                                     </div>
@@ -143,11 +151,15 @@
     
     .table-responsive {
         overflow-x: auto;
+        margin: -20px -20px -20px -20px;
+        padding: 0 20px;
     }
     
     .admin-table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 14px;
+        table-layout: auto;
     }
     
     .admin-table thead {
@@ -156,14 +168,15 @@
     }
     
     .admin-table th {
-        padding: 12px;
+        padding: 10px 8px;
         text-align: left;
         font-weight: 600;
         color: #333;
+        white-space: nowrap;
     }
     
     .admin-table td {
-        padding: 12px;
+        padding: 10px 8px;
         border-bottom: 1px solid #eee;
     }
     
@@ -211,6 +224,45 @@
     .status-inactive {
         background: #f8d7da;
         color: #721c24;
+    }
+    
+    .btn-feature-toggle {
+        display: inline-block !important;
+        width: auto !important;
+        height: auto !important;
+        padding: 6px 10px !important;
+        border-radius: 5px !important;
+        border: 2px solid #ffc107 !important;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 18px;
+        transition: all 0.3s ease;
+        background: #fff3cd !important;
+        color: #856404 !important;
+        box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5) !important;
+        vertical-align: middle;
+        margin: 0 5px 0 0;
+    }
+    
+    .btn-feature-toggle:hover {
+        background: #ffc107 !important;
+        color: #333 !important;
+        border-color: #ff9800 !important;
+        transform: scale(1.15);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.6) !important;
+    }
+    
+    .btn-feature-toggle.featured {
+        background: #ffc107 !important;
+        color: #333 !important;
+        border-color: #ff9800 !important;
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.5) !important;
+    }
+    
+    .btn-feature-toggle.featured:hover {
+        background: #ff9800 !important;
+        border-color: #ff7b00 !important;
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.5) !important;
     }
     
     .action-buttons {
@@ -280,4 +332,47 @@
         }
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle feature toggle buttons
+    const featureToggleButtons = document.querySelectorAll('.btn-feature-toggle');
+    
+    featureToggleButtons.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            
+            try {
+                const response = await fetch(`/admin/products/${productId}/toggle-feature`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update button state
+                    if (data.is_featured) {
+                        this.classList.add('featured');
+                        this.textContent = '⭐ Featured';
+                        this.title = 'Unfeature this product';
+                    } else {
+                        this.classList.remove('featured');
+                        this.textContent = '☆ Feature';
+                        this.title = 'Feature this product';
+                    }
+                } else {
+                    alert('Error updating product');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating product');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

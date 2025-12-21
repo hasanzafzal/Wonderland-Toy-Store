@@ -1,69 +1,8 @@
 // Wonderland Toy Store - Interactive JavaScript
 
-// Sample product data for featured section
-const featuredProducts = [
-    {
-        id: 1,
-        name: 'Action Hero Set',
-        category: 'Action Figures',
-        price: 29.99,
-        rating: 4.8,
-        icon: '🦸',
-        description: 'Premium action figures with articulated joints'
-    },
-    {
-        id: 2,
-        name: 'Build Master Blocks',
-        category: 'Building Sets',
-        price: 39.99,
-        rating: 4.9,
-        icon: '🧱',
-        description: 'Educational building blocks for creative minds'
-    },
-    {
-        id: 3,
-        name: 'Puzzle Challenge',
-        category: 'Puzzles',
-        price: 24.99,
-        rating: 4.7,
-        icon: '🧩',
-        description: '1000-piece challenging puzzle for all ages'
-    },
-    {
-        id: 4,
-        name: 'Outdoor Adventure Pack',
-        category: 'Outdoor',
-        price: 44.99,
-        rating: 4.6,
-        icon: '🚴',
-        description: 'Complete outdoor play equipment set'
-    },
-    {
-        id: 5,
-        name: 'Art Studio Deluxe',
-        category: 'Arts & Crafts',
-        price: 34.99,
-        rating: 4.8,
-        icon: '🎨',
-        description: 'Premium art supplies and craft materials'
-    },
-    {
-        id: 6,
-        name: 'Cuddle Companion',
-        category: 'Plush Toys',
-        price: 19.99,
-        rating: 4.9,
-        icon: '🧸',
-        description: 'Soft and cuddly plush toy for all ages'
-    }
-];
-
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎪 Wonderland Toy Store loaded!');
-    
-    // Render featured products
-    renderFeaturedProducts();
     
     // Add event listeners
     setupEventListeners();
@@ -77,47 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Category cards
     setupCategoryCards();
 });
-
-// Render featured products
-function renderFeaturedProducts() {
-    const container = document.getElementById('featured-products');
-    if (!container) return;
-    
-    container.innerHTML = featuredProducts.map(product => `
-        <div class="product-card" data-product-id="${product.id}">
-            <div class="product-image">
-                <span>${product.icon}</span>
-            </div>
-            <div class="product-info">
-                <div class="product-category">${product.category}</div>
-                <h3 class="product-name">${product.name}</h3>
-                <p class="product-description">${product.description}</p>
-                <div class="product-footer">
-                    <div class="product-price">$${product.price}</div>
-                    <div class="product-rating">⭐ ${product.rating}</div>
-                </div>
-                <button class="btn-add-cart" data-product-id="${product.id}">Add to Cart</button>
-            </div>
-        </div>
-    `).join('');
-    
-    // Add event listeners to "Add to Cart" buttons
-    document.querySelectorAll('.btn-add-cart').forEach(btn => {
-        btn.addEventListener('click', handleAddToCart);
-    });
-}
-
-// Handle "Add to Cart" button click
-function handleAddToCart(e) {
-    const productId = e.target.dataset.productId;
-    const product = featuredProducts.find(p => p.id == productId);
-    
-    if (product) {
-        // Show success message
-        const btn = e.target;
-        const originalText = btn.textContent;
-        btn.textContent = '✓ Added!';
-        btn.style.background = '#27ae60';
         
         setTimeout(() => {
             btn.textContent = originalText;
@@ -211,12 +109,8 @@ function setupCategoryCards() {
 // Handle category click
 function handleCategoryClick(category) {
     console.log(`Clicked category: ${category}`);
-    // Filter products by category (in real app, would navigate or filter)
-    const filtered = featuredProducts.filter(p => 
-        p.category.toLowerCase().includes(category.toLowerCase())
-    );
-    console.log(`Found ${filtered.length} products in ${category}`);
-    showNotification(`Showing ${filtered.length} products in ${category}`);
+    // Category navigation is handled by the category links themselves
+    showNotification(`Navigating to ${category} products`);
 }
 
 // Smooth scroll to sections

@@ -27,7 +27,38 @@
             <p>Our Most Popular Toys This Season</p>
         </div>
         <div class="featured-grid" id="featured-products">
-            <!-- Dynamically populated by JavaScript -->
+            {% if featured_products %}
+                {% for product in featured_products %}
+                <div class="featured-card">
+                    <div class="featured-image">
+                        {% if product.image_filename %}
+                            <img src="{{ url_for('static', filename='images/products/' + product.image_filename) }}" alt="{{ product.name }}" />
+                        {% else %}
+                            <div class="image-placeholder">📦</div>
+                        {% endif %}
+                        <div class="featured-badge">⭐ Featured</div>
+                    </div>
+                    <div class="featured-content">
+                        <h3>{{ product.name }}</h3>
+                        {% if product.category %}
+                            <p class="category-tag">{{ product.category.name }}</p>
+                        {% endif %}
+                        <p class="description">{{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}</p>
+                        <div class="featured-footer">
+                            <div class="price">
+                                <span class="currency">$</span>
+                                <span class="amount">{{ "%.2f"|format(product.price) }}</span>
+                            </div>
+                            <a href="{{ url_for('main.all_products') }}" class="btn-view">Shop Now</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-featured">
+                    <p>No featured products yet. Check back soon!</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </section>
