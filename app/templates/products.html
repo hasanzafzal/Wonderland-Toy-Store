@@ -99,7 +99,6 @@
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
-                    <p class="product-description product-short-description" style="display: none;">{{ product.description or 'Premium toy product' }}</p>
                     <div class="product-details-section" style="display: none;">
                         <div class="product-details-content">
                             <p class="product-full-description">{{ product.description or 'Premium toy product' }}</p>
@@ -110,7 +109,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <button class="btn btn-details" onclick="toggleDetails(this)">Details</button>
+                    <button class="btn btn-details" onclick="toggleDetails(this)">Show Details</button>
                     <div class="product-footer">
                         <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
                         <div class="product-rating">⭐ 4.8</div>
@@ -172,16 +171,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleDetails(button) {
     const productCard = button.closest('.product-card');
     const detailsSection = productCard.querySelector('.product-details-section');
-    const shortDescription = productCard.querySelector('.product-short-description');
     
     if (detailsSection.style.display === 'none') {
         detailsSection.style.display = 'block';
-        shortDescription.style.display = 'block';
         button.classList.add('active');
+        button.textContent = 'Hide Details';
     } else {
         detailsSection.style.display = 'none';
-        shortDescription.style.display = 'none';
         button.classList.remove('active');
+        button.textContent = 'Show Details';
     }
 }
 
