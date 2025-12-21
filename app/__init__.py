@@ -16,10 +16,14 @@ def create_app():
     # SQLite database configuration
     basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     instance_path = os.path.join(basedir, 'instance')
-    os.makedirs(instance_path, exist_ok=True)
     
-    # Ensure instance directory is writable
-    os.chmod(instance_path, 0o777)
+    try:
+        os.makedirs(instance_path, exist_ok=True)
+        # Ensure instance directory is writable
+        os.chmod(instance_path, 0o777)
+    except (OSError, PermissionError):
+        # Vercel's filesystem may not allow chmod, ignore
+        pass
     
     db_path = os.path.join(instance_path, 'store.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}?timeout=10&check_same_thread=False'
@@ -64,7 +68,11 @@ def create_app():
         # Ensure database file has proper permissions
         db_path = os.path.join(instance_path, 'store.db')
         if os.path.exists(db_path):
-            os.chmod(db_path, 0o666)
+            try:
+                os.chmod(db_path, 0o666)
+            except (OSError, PermissionError):
+                # Vercel's filesystem may not allow chmod, ignore
+                pass
         
         # Add category_id column to products table if it doesn't exist
         inspector = inspect(db.engine)
