@@ -51,63 +51,64 @@ def create_app():
     app.register_blueprint(main_bp)
     
     # Create tables and seed data
-    with app.app_context():
-        # Enable WAL mode for SQLite for better concurrency
-        @event.listens_for(db.engine, 'connect')
-        def set_sqlite_pragma(dbapi_conn, connection_record):
-            if 'sqlite' in str(db.engine.url):
-                cursor = dbapi_conn.cursor()
-                cursor.execute('PRAGMA journal_mode=WAL')
-                cursor.execute('PRAGMA synchronous=NORMAL')
-                cursor.execute('PRAGMA cache_size=-64000')
-                cursor.execute('PRAGMA foreign_keys=ON')
-                cursor.close()
-        
-        db.create_all()
-        
-        # Ensure database file has proper permissions
-        db_path = os.path.join(instance_path, 'store.db')
-        if os.path.exists(db_path):
-            try:
-                os.chmod(db_path, 0o666)
-            except (OSError, PermissionError):
-                # Vercel's filesystem may not allow chmod, ignore
-                pass
-        
-        # Add category_id column to products table if it doesn't exist
-        inspector = inspect(db.engine)
-        products_columns = [col['name'] for col in inspector.get_columns('products')]
-        orders_columns = [col['name'] for col in inspector.get_columns('orders')]
-        
-        # Helper function to refresh column list
-        def refresh_columns():
-            nonlocal products_columns, orders_columns
+    try:
+        with app.app_context():
+            # Enable WAL mode for SQLite for better concurrency
+            @event.listens_for(db.engine, 'connect')
+            def set_sqlite_pragma(dbapi_conn, connection_record):
+                if 'sqlite' in str(db.engine.url):
+                    cursor = dbapi_conn.cursor()
+                    cursor.execute('PRAGMA journal_mode=WAL')
+                    cursor.execute('PRAGMA synchronous=NORMAL')
+                    cursor.execute('PRAGMA cache_size=-64000')
+                    cursor.execute('PRAGMA foreign_keys=ON')
+                    cursor.close()
+            
+            db.create_all()
+            
+            # Ensure database file has proper permissions
+            db_path = os.path.join(instance_path, 'store.db')
+            if os.path.exists(db_path):
+                try:
+                    os.chmod(db_path, 0o666)
+                except (OSError, PermissionError):
+                    # Vercel's filesystem may not allow chmod, ignore
+                    pass
+            
+            # Add category_id column to products table if it doesn't exist
             inspector = inspect(db.engine)
             products_columns = [col['name'] for col in inspector.get_columns('products')]
             orders_columns = [col['name'] for col in inspector.get_columns('orders')]
-        
-        if 'category_id' not in products_columns:
-            try:
-                with db.engine.connect() as connection:
-                    connection.execute(text('ALTER TABLE products ADD COLUMN category_id INTEGER'))
-                    connection.commit()
-                refresh_columns()
-            except:
-                pass
-        
-        # Add image_filename column to products table if it doesn't exist
-        if 'image_filename' not in products_columns:
-            try:
-                with db.engine.connect() as connection:
-                    connection.execute(text('ALTER TABLE products ADD COLUMN image_filename VARCHAR(255)'))
-                    connection.commit()
-                refresh_columns()
-            except:
-                pass
-        
-        # Add shipping and payment columns to orders table if they don't exist
-        order_columns_to_add = [
-            ('full_name', 'VARCHAR(200)'),
+            
+            # Helper function to refresh column list
+            def refresh_columns():
+                nonlocal products_columns, orders_columns
+                inspector = inspect(db.engine)
+                products_columns = [col['name'] for col in inspector.get_columns('products')]
+                orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+            
+            if 'category_id' not in products_columns:
+                try:
+                    with db.engine.connect() as connection:
+                        connection.execute(text('ALTER TABLE products ADD COLUMN category_id INTEGER'))
+                        connection.commit()
+                    refresh_columns()
+                except:
+                    pass
+            
+            # Add image_filename column to products table if it doesn't exist
+            if 'image_filename' not in products_columns:
+                try:
+                    with db.engine.connect() as connection:
+                        connection.execute(text('ALTER TABLE products ADD COLUMN image_filename VARCHAR(255)'))
+                        connection.commit()
+                    refresh_columns()
+                except:
+                    pass
+            
+            # Add shipping and payment columns to orders table if they don't exist
+            order_columns_to_add = [
+                ('full_name', 'VARCHAR(200)'),
             ('email', 'VARCHAR(120)'),
             ('phone', 'VARCHAR(20)'),
             ('city', 'VARCHAR(100)'),
@@ -166,5 +167,8 @@ def create_app():
             for product in products:
                 db.session.add(product)
             db.session.commit()
+    except Exception as e:
+        print(f"Warning: Database initialization failed (may be normal on Vercel): {e}")
+        # Continue anyway - the app can still serve requests
     
     return app
