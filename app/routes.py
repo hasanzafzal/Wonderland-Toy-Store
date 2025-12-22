@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, jsonify, request, redirect, url_fo
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import Product, Order, User, Cart, CartItem, Wishlist, Category
 from app import db
-from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 import os
