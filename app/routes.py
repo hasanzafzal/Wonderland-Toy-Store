@@ -329,6 +329,17 @@ def update_cart_item(item_id):
     flash('Cart updated!', 'success')
     return redirect(url_for('main.view_cart'))
 
+@main_bp.route('/cart/empty')
+@login_required
+def empty_cart():
+    """Empty the shopping cart"""
+    cart = current_user.cart
+    if cart:
+        CartItem.query.filter_by(cart_id=cart.id).delete()
+        db.session.commit()
+        flash('Your cart has been emptied', 'success')
+    return redirect(url_for('main.view_cart'))
+
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
