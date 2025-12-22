@@ -12,7 +12,11 @@
             {% for item in wishlist_items %}
                 <div class="wishlist-item">
                     <div class="product-image">
-                        <div class="image-placeholder">{{ item.product.name[:1] }}</div>
+                        {% if item.product.image_filename %}
+                            <img src="/static/images/products/{{ item.product.image_filename }}" alt="{{ item.product.name }}" class="product-img" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="image-placeholder">{{ item.product.name[:1] }}</div>
+                        {% endif %}
                     </div>
                     <div class="item-content">
                         <h3>{{ item.product.name }}</h3>
