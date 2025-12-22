@@ -223,6 +223,11 @@ def contact():
     """Contact page"""
     return render_template('contact.html', title='Contact Us')
 
+@main_bp.route('/refund-return-policy')
+def refund_return_policy():
+    """Refund and return policy page"""
+    return render_template('refund_return_policy.html', title='Refund & Return Policy')
+
 @main_bp.route('/cart')
 def view_cart():
     """View shopping cart"""
