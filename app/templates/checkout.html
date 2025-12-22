@@ -25,6 +25,17 @@
             
             <form method="POST" id="checkoutForm">
                 <div class="checkout-section">
+                    <h2>🎁 Promo Code</h2>
+                    <div class="promo-code-group">
+                        <div class="promo-input-wrapper">
+                            <input type="text" id="promoInput" name="promo_code" placeholder="Enter promo code (e.g., H&Hoff15)" maxlength="50">
+                            <button type="button" id="applyPromoBtn" class="btn-apply-promo">Apply</button>
+                        </div>
+                        <div id="promoMessage" class="promo-message"></div>
+                    </div>
+                </div>
+                
+                <div class="checkout-section">
                     <h2>🏠 Shipping Details</h2>
                     
                     <div class="form-group">
@@ -108,7 +119,7 @@
                 <div class="price-breakdown">
                     <div class="price-row">
                         <span>Subtotal:</span>
-                        <span>${{ "%.2f"|format(cart.get_total()) }}</span>
+                        <span id="subtotal">${{ "%.2f"|format(cart.get_total()) }}</span>
                     </div>
                     <div class="price-row">
                         <span>Shipping:</span>
@@ -116,13 +127,17 @@
                     </div>
                     <div class="price-row">
                         <span>Tax (10%):</span>
-                        <span>${{ "%.2f"|format(cart.get_total() * 0.1) }}</span>
+                        <span id="tax">${{ "%.2f"|format(cart.get_total() * 0.1) }}</span>
+                    </div>
+                    <div class="price-row" id="discountRow" style="display:none; color: #27ae60;">
+                        <span>Discount <span id="discountPercent"></span>:</span>
+                        <span id="discountAmount">-$0.00</span>
                     </div>
                 </div>
                 
                 <div class="price-row total">
                     <span>Total:</span>
-                    <span>${{ "%.2f"|format(cart.get_total() * 1.1) }}</span>
+                    <span id="total">${{ "%.2f"|format(cart.get_total() * 1.1) }}</span>
                 </div>
                 
                 <div class="security-info">
@@ -495,6 +510,77 @@
         box-shadow: 0 0 0 3px rgba(255, 135, 0, 0.1);
     }
     
+    .promo-code-group {
+        margin-top: 10px;
+    }
+    
+    .promo-input-wrapper {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .promo-input-wrapper input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    .promo-input-wrapper input:focus {
+        outline: none;
+        border-color: #FF8700;
+        box-shadow: 0 0 0 3px rgba(255, 135, 0, 0.1);
+    }
+    
+    .btn-apply-promo {
+        padding: 10px 20px;
+        background: #FF8700;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+    
+    .btn-apply-promo:hover {
+        background: #CC6B00;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 135, 0, 0.3);
+    }
+    
+    .btn-apply-promo:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .promo-message {
+        font-size: 13px;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        display: none;
+    }
+    
+    .promo-message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: block;
+    }
+    
+    .promo-message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+    }
+    
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -595,4 +681,99 @@
         }
     }
 </style>
+
+<script>
+    // Promo code configuration
+    const VALID_PROMO_CODES = {
+        'H&HOFF15': 15
+    };
+    
+    const SUBTOTAL = {{ cart.get_total() }};
+    const TAX_RATE = 0.10;
+    let appliedDiscount = {
+        code: null,
+        percentage: 0,
+        amount: 0
+    };
+    
+    // Apply promo code
+    document.getElementById('applyPromoBtn').addEventListener('click', function() {
+        const promoInput = document.getElementById('promoInput');
+        const promoCode = promoInput.value.trim().toUpperCase();
+        const messageDiv = document.getElementById('promoMessage');
+        
+        if (!promoCode) {
+            messageDiv.textContent = 'Please enter a promo code.';
+            messageDiv.className = 'promo-message error';
+            return;
+        }
+        
+        if (VALID_PROMO_CODES[promoCode]) {
+            const discountPercent = VALID_PROMO_CODES[promoCode];
+            appliedDiscount.code = promoCode;
+            appliedDiscount.percentage = discountPercent;
+            appliedDiscount.amount = (SUBTOTAL * discountPercent) / 100;
+            
+            messageDiv.textContent = `✓ Promo code "${promoCode}" applied! You saved $${appliedDiscount.amount.toFixed(2)} (${discountPercent}% off)`;
+            messageDiv.className = 'promo-message success';
+            
+            updateTotal();
+            promoInput.disabled = true;
+            this.disabled = true;
+            this.textContent = 'Applied';
+        } else {
+            appliedDiscount = {
+                code: null,
+                percentage: 0,
+                amount: 0
+            };
+            messageDiv.textContent = 'Invalid promo code. Please try again.';
+            messageDiv.className = 'promo-message error';
+            updateTotal();
+        }
+    });
+    
+    // Allow Enter key to apply promo
+    document.getElementById('promoInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('applyPromoBtn').click();
+        }
+    });
+    
+    function updateTotal() {
+        const discountRow = document.getElementById('discountRow');
+        const discountPercent = document.getElementById('discountPercent');
+        const discountAmount = document.getElementById('discountAmount');
+        const subtotalElem = document.getElementById('subtotal');
+        const taxElem = document.getElementById('tax');
+        const totalElem = document.getElementById('total');
+        
+        // Calculate tax on subtotal (before discount)
+        const tax = SUBTOTAL * TAX_RATE;
+        const subtotalAfterDiscount = SUBTOTAL - appliedDiscount.amount;
+        const total = subtotalAfterDiscount + tax;
+        
+        // Update display
+        subtotalElem.textContent = '$' + SUBTOTAL.toFixed(2);
+        taxElem.textContent = '$' + tax.toFixed(2);
+        
+        if (appliedDiscount.percentage > 0) {
+            discountRow.style.display = 'flex';
+            discountPercent.textContent = appliedDiscount.percentage + '%';
+            discountAmount.textContent = '-$' + appliedDiscount.amount.toFixed(2);
+        } else {
+            discountRow.style.display = 'none';
+        }
+        
+        totalElem.textContent = '$' + total.toFixed(2);
+    }
+    
+    // Store promo code before form submission
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const promoInput = document.querySelector('input[name="promo_code"]');
+        if (appliedDiscount.code) {
+            promoInput.value = appliedDiscount.code;
+        }
+    });
+</script>
 {% endblock %}

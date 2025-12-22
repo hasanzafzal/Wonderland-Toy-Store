@@ -349,6 +349,7 @@ def checkout():
         state = request.form.get('state')
         postal_code = request.form.get('postal_code')
         payment_method = request.form.get('payment_method')
+        promo_code = request.form.get('promo_code', '').strip()
         
         # Validate required fields
         if not all([full_name, email, phone, shipping_address, city, state, postal_code, payment_method]):
@@ -366,6 +367,20 @@ def checkout():
             flash('Invalid payment method', 'error')
             return redirect(url_for('main.checkout'))
         
+        # Validate promo code and calculate discount
+        promo_discount_percent = 0
+        if promo_code:
+            # Valid promo codes
+            valid_promo_codes = {
+                'H&HOFF15': 15
+            }
+            if promo_code.upper() in valid_promo_codes:
+                promo_discount_percent = valid_promo_codes[promo_code.upper()]
+                promo_code = promo_code.upper()
+            else:
+                flash('Invalid promo code', 'error')
+                return redirect(url_for('main.checkout'))
+        
         # For card payment, redirect to payment page
         if payment_method == Order.PAYMENT_CARD:
             session['checkout_data'] = {
@@ -376,7 +391,9 @@ def checkout():
                 'city': city,
                 'state': state,
                 'postal_code': postal_code,
-                'payment_method': payment_method
+                'payment_method': payment_method,
+                'promo_code': promo_code,
+                'promo_discount_percent': promo_discount_percent
             }
             return redirect(url_for('main.payment_card'))
         
@@ -386,6 +403,11 @@ def checkout():
             
             # Create orders for each item in cart
             for item in cart.items:
+                # Calculate discount for this item
+                item_subtotal = item.product.price * item.quantity
+                item_discount_amount = (item_subtotal * promo_discount_percent) / 100
+                item_total_after_discount = item_subtotal - item_discount_amount
+                
                 # Generate random tracking number
                 tracking_number = f"WTS{datetime.utcnow().strftime('%Y%m%d')}{secrets.token_hex(4).upper()}"
                 # Generate unique transaction ID
@@ -395,7 +417,7 @@ def checkout():
                     user_id=current_user.id,
                     product_id=item.product_id,
                     quantity=item.quantity,
-                    total_price=item.product.price * item.quantity,
+                    total_price=item_total_after_discount,
                     full_name=full_name,
                     email=email,
                     phone=phone,
@@ -406,7 +428,10 @@ def checkout():
                     payment_method=payment_method,
                     payment_status=Order.PAYMENT_COMPLETED if payment_method == Order.PAYMENT_PAYPAL else Order.PAYMENT_PENDING,
                     tracking_number=tracking_number,
-                    transaction_id=transaction_id
+                    transaction_id=transaction_id,
+                    promo_code=promo_code if promo_code else None,
+                    discount_percentage=promo_discount_percent,
+                    discount_amount=item_discount_amount
                 )
                 db.session.add(order)
                 
@@ -480,8 +505,17 @@ def payment_card():
             # Process payment (simulated)
             # In a real app, this would call a payment gateway like Stripe or PayPal
             
+            # Get promo details from checkout_data
+            promo_code = checkout_data.get('promo_code')
+            promo_discount_percent = checkout_data.get('promo_discount_percent', 0)
+            
             # Create orders for each item in cart
             for item in cart.items:
+                # Calculate discount for this item
+                item_subtotal = item.product.price * item.quantity
+                item_discount_amount = (item_subtotal * promo_discount_percent) / 100
+                item_total_after_discount = item_subtotal - item_discount_amount
+                
                 # Generate random tracking number
                 tracking_number = f"WTS{datetime.utcnow().strftime('%Y%m%d')}{secrets.token_hex(4).upper()}"
                 # Generate unique transaction ID
@@ -491,7 +525,7 @@ def payment_card():
                     user_id=current_user.id,
                     product_id=item.product_id,
                     quantity=item.quantity,
-                    total_price=item.product.price * item.quantity,
+                    total_price=item_total_after_discount,
                     full_name=checkout_data['full_name'],
                     email=checkout_data['email'],
                     phone=checkout_data['phone'],
@@ -502,7 +536,10 @@ def payment_card():
                     payment_method=Order.PAYMENT_CARD,
                     payment_status=Order.PAYMENT_COMPLETED,
                     tracking_number=tracking_number,
-                    transaction_id=transaction_id
+                    transaction_id=transaction_id,
+                    promo_code=promo_code if promo_code else None,
+                    discount_percentage=promo_discount_percent,
+                    discount_amount=item_discount_amount
                 )
                 db.session.add(order)
                 

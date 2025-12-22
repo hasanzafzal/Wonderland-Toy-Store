@@ -51,6 +51,16 @@
                             <span class="label">Description:</span>
                             <span class="value">{{ order.product.description or 'N/A' }}</span>
                         </div>
+                        {% if order.promo_code %}
+                        <div class="detail-row promo-row">
+                            <span class="label">Promo Code:</span>
+                            <span class="value">{{ order.promo_code }} ({{ order.discount_percentage }}% off)</span>
+                        </div>
+                        <div class="detail-row discount-row">
+                            <span class="label">Discount Applied:</span>
+                            <span class="value discount-amount">-${{ "%.2f"|format(order.discount_amount) }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="order-footer">
@@ -201,6 +211,25 @@
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .detail-row.promo-row {
+        background: #f0f8ff;
+        border-left: 4px solid #FF8700;
+        padding-left: 16px;
+        margin: 10px 0;
+    }
+    
+    .detail-row.discount-row {
+        background: #d4edda;
+        border-left: 4px solid #27ae60;
+        padding-left: 16px;
+        margin: 10px 0;
+    }
+    
+    .detail-row.discount-row .discount-amount {
+        color: #27ae60;
         font-weight: 600;
     }
     
