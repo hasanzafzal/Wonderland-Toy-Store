@@ -76,16 +76,36 @@ def create_app():
                     pass
             
             # Add category_id column to products table if it doesn't exist
-            inspector = inspect(db.engine)
-            products_columns = [col['name'] for col in inspector.get_columns('products')]
-            orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+            try:
+                inspector = inspect(db.engine)
+                products_columns = [col['name'] for col in inspector.get_columns('products')]
+                orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+            except Exception as e:
+                # Tables might not exist yet, create them and retry
+                db.create_all()
+                inspector = inspect(db.engine)
+                try:
+                    products_columns = [col['name'] for col in inspector.get_columns('products')]
+                except:
+                    products_columns = []
+                try:
+                    orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+                except:
+                    orders_columns = []
             
             # Helper function to refresh column list
             def refresh_columns():
                 nonlocal products_columns, orders_columns
-                inspector = inspect(db.engine)
-                products_columns = [col['name'] for col in inspector.get_columns('products')]
-                orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+                try:
+                    inspector = inspect(db.engine)
+                    products_columns = [col['name'] for col in inspector.get_columns('products')]
+                except:
+                    pass
+                try:
+                    inspector = inspect(db.engine)
+                    orders_columns = [col['name'] for col in inspector.get_columns('orders')]
+                except:
+                    pass
             
             if 'category_id' not in products_columns:
                 try:
@@ -109,26 +129,32 @@ def create_app():
             # Add shipping and payment columns to orders table if they don't exist
             order_columns_to_add = [
                 ('full_name', 'VARCHAR(200)'),
-            ('email', 'VARCHAR(120)'),
-            ('phone', 'VARCHAR(20)'),
-            ('city', 'VARCHAR(100)'),
-            ('state', 'VARCHAR(100)'),
-            ('postal_code', 'VARCHAR(20)'),
-            ('payment_method', "VARCHAR(50) DEFAULT 'cash_on_delivery'"),
-            ('payment_status', "VARCHAR(20) DEFAULT 'pending'"),
-            ('transaction_id', 'VARCHAR(100)'),
-        ]
-        
-        for column_name, column_type in order_columns_to_add:
-            if column_name not in orders_columns:
-                try:
-                    with db.engine.connect() as connection:
-                        connection.execute(text(f'ALTER TABLE orders ADD COLUMN {column_name} {column_type}'))
-                        connection.commit()
-                    refresh_columns()
-                except Exception as e:
-                    # Column might already exist or other error - continue
-                    pass
+                ('email', 'VARCHAR(120)'),
+                ('phone', 'VARCHAR(20)'),
+                ('shipping_address', 'TEXT'),
+                ('city', 'VARCHAR(100)'),
+                ('state', 'VARCHAR(100)'),
+                ('postal_code', 'VARCHAR(20)'),
+                ('payment_method', "VARCHAR(50) DEFAULT 'cash_on_delivery'"),
+                ('payment_status', "VARCHAR(20) DEFAULT 'pending'"),
+                ('transaction_id', 'VARCHAR(100)'),
+                ('promo_code', 'VARCHAR(50)'),
+                ('discount_percentage', 'FLOAT DEFAULT 0'),
+                ('discount_amount', 'FLOAT DEFAULT 0'),
+                ('tracking_number', 'VARCHAR(100)'),
+            ]
+            
+            for column_name, column_type in order_columns_to_add:
+                if column_name not in orders_columns:
+                    try:
+                        with db.engine.connect() as connection:
+                            connection.execute(text(f'ALTER TABLE orders ADD COLUMN {column_name} {column_type}'))
+                            connection.commit()
+                        refresh_columns()
+                        print(f"✓ Added column '{column_name}' to orders table")
+                    except Exception as e:
+                        # Column might already exist or other error - continue
+                        print(f"Note: Could not add column '{column_name}' to orders: {str(e)[:100]}")
         
         # Fix any empty string datetime values in users table
         with db.engine.connect() as connection:
