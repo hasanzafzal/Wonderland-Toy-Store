@@ -386,9 +386,4 @@ If you encounter any issues or have questions:
 ## 📧 Contact
 
 For inquiries and feedback, please reach out to:
-- **Email**: your-email@example.com
 - **GitHub**: [@hasanzafzal](https://github.com/hasanzafzal)
-
----
-
-**Happy coding! 🚀** Built with ❤️ for e-commerce lovers
