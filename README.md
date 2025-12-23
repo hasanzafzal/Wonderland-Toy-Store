@@ -78,7 +78,7 @@ pip --version
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/Wonderland-Toy-Store.git
+git clone https://github.com/hasanzafzal/Wonderland-Toy-Store.git
 cd Wonderland-Toy-Store
 ```
 
@@ -344,7 +344,7 @@ Contributions are welcome! Here's how you can help:
 
 1. **Fork the Repository**
    ```bash
-   git clone https://github.com/yourusername/Wonderland-Toy-Store.git
+   git clone https://github.com/hasanzafzal/Wonderland-Toy-Store.git
    ```
 
 2. **Create a Feature Branch**
@@ -379,7 +379,7 @@ This project is licensed under the GNU General Public License v2.0 - see the [LI
 
 If you encounter any issues or have questions:
 
-1. Check the [GitHub Issues](https://github.com/yourusername/Wonderland-Toy-Store/issues)
+1. Check the [GitHub Issues](https://github.com/hasanzafzal/Wonderland-Toy-Store/issues)
 2. Create a new issue with a detailed description
 3. Include steps to reproduce the problem
 
@@ -387,7 +387,7 @@ If you encounter any issues or have questions:
 
 For inquiries and feedback, please reach out to:
 - **Email**: your-email@example.com
-- **GitHub**: [@yourusername](https://github.com/yourusername)
+- **GitHub**: [@hasanzafzal](https://github.com/hasanzafzal)
 
 ---
 
