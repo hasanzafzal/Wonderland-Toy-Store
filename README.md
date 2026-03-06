@@ -375,6 +375,13 @@ Contributions are welcome! Here's how you can help:
 
 This project is licensed under the GNU General Public License v2.0 - see the [LICENSE](LICENSE) file for details.
 
+## UI:
+<img width="1903" height="1008" alt="Screenshot From 2025-12-22 11-00-42" src="https://github.com/user-attachments/assets/cc80397c-9f7b-4ea4-b738-a1164ba2e484" />
+<img width="1903" height="1008" alt="Screenshot From 2025-12-22 11-01-04" src="https://github.com/user-attachments/assets/77fdd97c-53bb-4905-bf69-a832ecc76a1b" />
+<img width="1903" height="1008" alt="Screenshot From 2025-12-22 11-02-28" src="https://github.com/user-attachments/assets/307947d8-f903-440d-8f1e-390a5dbb692c" />
+
+
+
 ## 🙋 Support
 
 If you encounter any issues or have questions:
@@ -387,3 +394,4 @@ If you encounter any issues or have questions:
 
 For inquiries and feedback, please reach out to:
 - **GitHub**: [@hasanzafzal](https://github.com/hasanzafzal)
+
